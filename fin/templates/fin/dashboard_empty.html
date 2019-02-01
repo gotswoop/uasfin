@@ -1,0 +1,153 @@
+{% extends 'fin/base.html' %}
+{% block content %}
+{% load humanize %}
+
+<div id="intro">
+	<h4>Welcome to the UASFin Project!</h4>
+	<hr/>
+	<p>In order to participate in this study, you will have to link your financial institution accounts to our secure website. This is done through Plaid, a company trusted by millions of consumers to connect their bank and other financial accounts with software applications that can help them manage their spending and save for retirement.</p>
+
+	<p>The linking process is simple: 
+
+	<ol>
+	<li>Click on "Link Account with Plaid"</li>
+	<li>Find your financial institution in the list or search for it using the search box</li>
+	<li>Click on your financial institution logo</li>
+	<li>Enter your financial institution credentials and click "Submit"</li>
+	</ol>
+
+	<p>Repeat steps 1-4 for each of your financial institutions. Once your financial institutions are linked, you will see all your accounts on our secure website and will be able to easily keep track of your financial transactions and account balances in one place.</p>
+
+	<p>For each financial institution you link, you will earn a reward of <font class="bg-success">$X</font> plus a reward of <font class="bg-success">$Y</font> every month (as long as your financial institution remains linked). The green box on the screen tells you how much rewards how have earned as you link institutions.</p>
+
+	<p>Remember, <strong>we will NOT have access to your credentials or any other identifying information.</strong></p>
+
+	<p>Your financial information will be kept secure and protected. Plaid will never share your login IDs, passwords, or any other personal information with UAS researchers or anyone else.</p>
+
+	<button id="link-btn" class="btn btn-lg btn-primary">Link Account with Plaid</button>
+	<br/><br/>
+</div>
+
+<div id="success" class="panel-collapse collapse in">
+	<div class="card mb-3">
+	  <div id="success_summary" class="card-header text-white bg-success"></div>
+	  <div class="card-body">
+	    <p class="card-text">Here is your updated reward credit..<br/><br/>
+			<samp>
+			New balance: $abc.df
+			</samp></p>
+			<p>Would you like to link an another institution?</p>
+
+	  </div>
+	</div>
+</div>
+	
+<div id="failure" class="panel-collapse collapse in">
+	<div class="card mb-3">
+	  <div id="failure_summary" class="card-header text-white bg-danger" ></div>
+	  <div class="card-body">
+	    <p class="card-text">Would you like to link a different institution?</p>
+	  </div>
+	</div>
+</div>
+
+<div id="are_you_sure" class="panel-collapse collapse in">
+	<p>These are the accounts often linked by other survey participants. Please take a look at this list:
+		<ul>
+		<li>Checking Accounts</li>
+		<li>Savings Accounts</li>
+		<li>Credit Card Accounts</li>
+		<li>Pre-paid Credit Card</li>
+		<li>Money Market Accounts</li>
+		<li>CD's</li>
+		<li>Mortgages</li>
+		<li>Home Equity Line of Credit (HELOC)</li>
+		<li>Employer-sponsored retirement accounts (401k, 403(b), and similar)</li> 
+		<li>Investment Retirement Accounts (IRA)</li>
+		<li>Brokerage Accounts</li>
+		</ul>
+		Think about all the accounts you have linked. Are there other accounts you may have forgotten and would like to link?
+	</p>
+</div>
+
+<div id="add_more" class="panel-collapse collapse in">
+	<p>
+		<button id="link-btn2" class="btn btn-lg btn-primary">Link Another Account</button>
+		<button id="link-btn-no" class="ml-3 btn btn-lg btn-outline-info">No</button>
+	</p>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script>
+  (function($) {
+    $.ajaxSetup({ // SWOOP: CSRF Token
+  		data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+	});
+
+    var products = '{{ plaid_products }}'.split(',');
+    if (products.includes('assets')) {
+      $('#assets').show();
+    }
+
+    var handler = Plaid.create({
+      apiVersion: 'v2',
+      clientName: 'UASFin',
+      env: '{{ plaid_environment }}',
+      product: products,
+      key: '{{ plaid_public_key }}',
+      webhook: '{{ plaid_webhook_url }}',
+      // token: 'public-sandbox-8e318f33-bbad-4b08-9e35-1be41ec10af3',
+      onSuccess: function(public_token) {
+        $.post('/get_access_token/', {
+          public_token: public_token,
+        }, function(data) {
+          $('#intro').fadeOut('fast', function() {
+          	window.console.log('\n\nItemId: ' + data.auth.item_id + '\nAccess Token: ' + data.auth.access_token + '\nRequest Id: ' + data.auth.request_id + '\nInstitution Id: ' + data.item.institution_id + '\nInstitution Name: ' + data.institution.name );
+            if (data.duplicate) {
+            	$('#failure_summary').html('"<strong>' + data.institution.name + '</strong>" account was previously linked!! </strong>');
+            	$('#failure').show();
+            	$('.add_more').show();
+            	$('#success').hide();
+            } else {
+            	$('#success_summary').html('Success! <strong>"' + data.institution.name + '"</strong> was succesfully linked to UASFin!');	
+            	$('#success').show();
+            	$('#add_more').show();
+            	$('#failure').hide();
+            }
+          });
+        });
+      },
+    });
+    
+    $('#link-btn').on('click', function(e) {
+		handler.open();
+    });
+
+    $('#link-btn2').on('click', function(e) {
+		handler.open();
+    });
+
+    $('#link-btn-dashboard').on('click', function(e) {
+		window.location.href='/';
+    });
+
+    $('#link-btn-no').on('click', function(e) {
+		$('#intro').hide();
+		$('#success').hide();
+		$('#failure').hide();
+		$('#are_you_sure').show();
+		$('#add_more').show();
+    });
+
+
+     })(jQuery);
+
+function qs(key) {
+    key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+    var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
+    return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+}
+</script>
+{% endblock content %}

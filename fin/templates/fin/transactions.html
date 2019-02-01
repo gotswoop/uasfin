@@ -1,0 +1,40 @@
+{% extends 'fin/base.html' %}
+{% block content %}
+{% load humanize %}
+
+<div id="intro">
+	<div class="card border bg-light">
+		<div class="card-header">
+			<div class="float-left">
+	      		<h4>{{ account.p_account_name }}</h4>
+				<p>
+					<strong>Account Details: </strong>{{ account.p_account_official_name }}<br/>
+					<strong>Type: </strong>{{ account.p_account_subtype|title }}
+				</p>
+				<h5><strong>Balance: </strong>$ {{ account.p_account_balance_current|floatformat:2|intcomma }}</h5>
+				
+    		</div>
+		</div>
+		<div class="card-body">
+			<table class="table table-striped">
+				<thead><tr><th>#</th><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr></thead>
+				<tbody>
+					{% for transaction in transactions %}
+					{% with cnt=forloop.counter %}
+					<tr>
+						<td>{{ cnt }}</td>
+						<td>{{ transaction.p_date|date:"Y-m-d" }}</td>
+						<td>{{ transaction.p_name }}</td>
+						<td>{{ transaction.get_category }}</td>
+						<td>$ {{ transaction.p_amount|floatformat:2|intcomma }}</td>
+					</tr>
+					{% endwith %}
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<br/><br/>
+</div>
+
+{% endblock content %}

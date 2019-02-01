@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="{% static 'fin/sticky-footer-navbar.css' %}">
+
+    {% if title %}
+		<title>UASFin2.0 - {{ title }}</title>
+	{% else %}
+		<title>UASFin2.0</title>
+	{% endif %}
+</head>
+<body>
+	<header class="site-header">
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+	<a class="navbar-brand" href="/">
+    	<img src="{% static 'fin/uas_logo.png' %}" width="33" height="30" class="d-inline-block align-top" alt="">
+    UASFin 2.0
+  	</a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+	<span class="navbar-toggler-icon"></span>
+	</button>
+	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+	<ul class="navbar-nav mr-auto">
+	  {% if user.is_authenticated %}
+		  <li class="nav-item">
+		    <a class="ml-3 nav-link" href="{% url 'home' %}">Dashboard</a>
+		  </li>
+	  {% endif %}
+	
+	  <li class="nav-item">
+	    <a class="ml-3 nav-link" href="/help/">Help</a>
+	  </li>
+	</ul>
+	{% if user.is_authenticated %}
+		<a href="{% url 'profile' %}">{{ user.first_name }} {{ user.last_name }} </a>
+		<a class="btn btn-outline-info ml-3" href="{% url 'logout' %}">Logout</a>
+	{% else %}
+		<a class="btn btn-outline-info" href="{% url 'login' %}">Login</a>
+	{% endif %}
+	
+	</div>
+	</nav>
+	</header>
+    
+    <main role="main" class="container">
+        <div class="col-md-12">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+          {% block content %}{% endblock %}
+      	</div>
+    </main>
+    <footer class="footer">
+      <div class="container">
+        Need assistance? Contact the UAS helpdesk at <a href="tel:1-855-872-8673">1-855-872-8673</a> (9am - 5pm PT) or by email: <a href="mailto:uashelp@usc.edu?subject=[via%20uasfin.usc.edu]">uashelp@usc.edu</a>
+      </div>
+    </footer>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+<!--
+<pre> {% filter force_escape %} {% debug %} {% endfilter %} </pre>
+-->
+</html>
+

@@ -1,0 +1,136 @@
+{% extends 'fin/base.html' %}
+{% block content %}
+{% load humanize %}
+
+<div id="intro">
+	<div class="card border bg-light">
+		<div class="card-header">
+			<div class="float-left">
+	      		<h2>Total Balance: $xx,xxx.xx</h2>
+				<h4>Assets: $yy,yyy.yy</h4>
+				<h4>Liabilities: $zz,zzz.zz</h4>
+    		</div>
+    		<div class="float-right mt-3 mr-3">
+      			<button id="link-btn" class="btn btn-lg btn-primary">Link Account with Plaid</button>
+    		</div>
+		</div>
+		<div class="card-body bg-secondary">
+			{% for key, value in accounts.items %}
+			{% with cnt=forloop.counter %}
+			<div class="card mb-3 border">
+				<div class="card-body">
+    				<h4 class="card-title text-info p-1">{{ cnt }}. {{ key }}</h4>
+					<table class="table table-striped">
+						<thead><tr><th>Account Name</th><th>Account Details</th><th>Type</th><th>Balance</th></tr></thead>
+						<tbody>
+							{% for x in value %}
+							<tr><td><a href="{% url 'account_details' account_id=x.fin_account_id %}">{{ x.fin_account_name }}</a></td>
+							<td>{{ x.fin_account_official_name }}</td><td>{{ x.fin_account_subtype|title }}</td><td>$ {{ x.fin_account_balance|floatformat:2|intcomma }}</td></tr> 
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+			{% endwith %}
+			{% endfor %}			
+		</div>
+		<div class="card-footer">
+			You have {{ accounts|length }} financial institution{% ifnotequal accounts|length 1 %}s{% endifnotequal %} linked. The more finacial institutions you link, the more you earn every month.
+		</div>
+	</div>
+	<br/><br/>
+</div>
+
+<div id="success" class="panel-collapse collapse in">
+	<div class="card mb-3">
+	  <div id="success_summary" class="card-header text-white bg-success"></div>
+	  <div class="card-body">
+	    <p class="card-text">Here is your updated reward credit..<br/><br/>
+			<samp>
+			New balance: $abc.df
+			</samp></p>
+			<p>Would you like to link an another institution?</p>
+	  </div>
+	</div>
+</div>
+	
+<div id="failure" class="panel-collapse collapse in">
+	<div class="card mb-3">
+	  <div id="failure_summary" class="card-header text-white bg-danger" ></div>
+	  <div class="card-body">
+	    <p class="card-text">Would you like to link a different institution?</p>
+	  </div>
+	</div>
+</div>
+
+<div id="add_more" class="panel-collapse collapse in">
+	<p>
+		<button id="link-btn2" class="btn btn-lg btn-primary">Link Another Account</button>
+		<button id="link-btn-dashboard" class="ml-3 btn btn-lg btn-outline-info">Go to dashboard</button>
+	</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script>
+  (function($) {
+    $.ajaxSetup({ // SWOOP: CSRF Token
+  		data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+	});
+
+    var products = '{{ plaid_products }}'.split(',');
+    if (products.includes('assets')) {
+      $('#assets').show();
+    }
+
+    var handler = Plaid.create({
+      apiVersion: 'v2',
+      clientName: 'UASFin',
+      env: '{{ plaid_environment }}',
+      product: products,
+      key: '{{ plaid_public_key }}',
+      webhook: '{{ plaid_webhook_url }}',
+      // token: 'public-sandbox-8e318f33-bbad-4b08-9e35-1be41ec10af3',
+      onSuccess: function(public_token) {
+        $.post('/get_access_token/', {
+          public_token: public_token,
+        }, function(data) {
+          $('#intro').fadeOut('fast', function() {
+          	window.console.log('\n\nItemId: ' + data.auth.item_id + '\nAccess Token: ' + data.auth.access_token + '\nRequest Id: ' + data.auth.request_id + '\nInstitution Id: ' + data.item.institution_id + '\nInstitution Name: ' + data.institution.name );
+            if (data.duplicate) {
+            	$('#failure_summary').html('"<strong>' + data.institution.name + '</strong>" account was previously linked!! </strong>');
+            	$('#failure').show();
+            	$('#add_more').show();
+            	$('#success').hide();
+            } else {
+            	$('#success_summary').html('Success! <strong>"' + data.institution.name + '"</strong> was succesfully linked to UASFin!');	
+            	$('#success').show();
+            	$('#add_more').show();
+            	$('#failure').hide();
+            }
+          });
+        });
+      },
+    });
+    
+    $('#link-btn').on('click', function(e) {
+		handler.open();
+    });
+
+    $('#link-btn2').on('click', function(e) {
+		handler.open();
+    });
+
+    $('#link-btn-dashboard').on('click', function(e) {
+		window.location.href='/';
+    });
+
+     })(jQuery);
+
+function qs(key) {
+    key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+    var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
+    return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+}
+</script>
+{% endblock content %}

@@ -1,3 +1,4 @@
+_setup
 *.sql
 *.log
 _venv
