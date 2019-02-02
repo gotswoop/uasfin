@@ -267,4 +267,4 @@ def account_details(request, account_id):
         }
         return render(request, 'fin/transactions.html', context)
     else:
-        return redirect('dashboard')
+        return redirect('home')

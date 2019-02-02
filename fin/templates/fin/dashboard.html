@@ -44,10 +44,12 @@
 		</div>
 		<div class="col-md-4">
 			<div class="card">
-				<div class="card-header bg-success text-white">Monthly Rewards Summary: $123</div>
+				<div class="card-header bg-success text-white">
+					<h6>Number of Active Institutions: {{ accounts|length }}</h6>
+					<h6>Monthly Rewards Summary: $123</h6></div>
 			 </div>
 			<div class="card mt-2">
-			  <div class="card-body">
+			  <div class="card-body border border-warning">
 			    <p class="card-text">
 			    	These are the accounts often linked by other survey participants. Please take a look at this list:
 					<ul>
