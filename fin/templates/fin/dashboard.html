@@ -3,42 +3,72 @@
 {% load humanize %}
 
 <div id="intro">
-	<div class="card border bg-light">
-		<div class="card-header">
-			<div class="float-left">
-	      		<h2>Total Balance: $xx,xxx.xx</h2>
-				<h4>Assets: $yy,yyy.yy</h4>
-				<h4>Liabilities: $zz,zzz.zz</h4>
-    		</div>
-    		<div class="float-right mt-3 mr-3">
-      			<button id="link-btn" class="btn btn-lg btn-primary">Link Account with Plaid</button>
-    		</div>
-		</div>
-		<div class="card-body bg-secondary">
-			{% for key, value in accounts.items %}
-			{% with cnt=forloop.counter %}
-			<div class="card mb-3 border">
-				<div class="card-body">
-    				<h4 class="card-title text-info p-1">{{ cnt }}. {{ key }}</h4>
-					<table class="table table-striped">
-						<thead><tr><th>Account Name</th><th>Account Details</th><th>Type</th><th>Balance</th></tr></thead>
-						<tbody>
-							{% for x in value %}
-							<tr><td><a href="{% url 'account_details' account_id=x.fin_account_id %}">{{ x.fin_account_name }}</a></td>
-							<td>{{ x.fin_account_official_name }}</td><td>{{ x.fin_account_subtype|title }}</td><td>$ {{ x.fin_account_balance|floatformat:2|intcomma }}</td></tr> 
-							{% endfor %}
-						</tbody>
-					</table>
+	<div class="row">
+		<div class="col-md-8">
+			<div class="card border bg-light">
+				<div class="card-header">
+					<div class="float-left">
+			      		<h2>Total Balance: $xx,xxx.xx</h2>
+						<h4>Assets: $yy,yyy.yy</h4>
+						<h4>Liabilities: $zz,zzz.zz</h4>
+		    		</div>
+		    		<div class="float-right mt-3 mr-3">
+		      			<button id="link-btn" class="btn btn-lg btn-primary">Link Account with Plaid</button>
+		    		</div>
+				</div>
+				<div class="card-body bg-secondary">
+					{% for key, value in accounts.items %}
+					{% with cnt=forloop.counter %}
+					<div class="card mb-3 border">
+						<div class="card-body">
+		    				<h4 class="card-title text-info p-1">{{ cnt }}. {{ key }}</h4>
+							<table class="table table-striped">
+								<thead><tr><th>Account Name</th><th>Account Details</th><th>Type</th><th>Balance</th></tr></thead>
+								<tbody>
+									{% for x in value %}
+									<tr><td><a href="{% url 'account_details' account_id=x.fin_account_id %}">{{ x.fin_account_name }}</a></td>
+									<td>{{ x.fin_account_official_name }}</td><td>{{ x.fin_account_subtype|title }}</td><td>$ {{ x.fin_account_balance|floatformat:2|intcomma }}</td></tr> 
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+					{% endwith %}
+					{% endfor %}			
+				</div>
+				<div class="card-footer">
+					You have {{ accounts|length }} financial institution{% ifnotequal accounts|length 1 %}s{% endifnotequal %} linked. The more finacial institutions you link, the more you earn every month.
 				</div>
 			</div>
-			{% endwith %}
-			{% endfor %}			
+			<br/><br/>
 		</div>
-		<div class="card-footer">
-			You have {{ accounts|length }} financial institution{% ifnotequal accounts|length 1 %}s{% endifnotequal %} linked. The more finacial institutions you link, the more you earn every month.
+		<div class="col-md-4">
+			<div class="card">
+				<div class="card-header bg-success text-white">Monthly Rewards Summary: $123</div>
+			 </div>
+			<div class="card mt-2">
+			  <div class="card-body">
+			    <p class="card-text">
+			    	These are the accounts often linked by other survey participants. Please take a look at this list:
+					<ul>
+					<li>Checking Accounts</li>
+					<li>Savings Accounts</li>
+					<li>Credit Card Accounts</li>
+					<li>Pre-paid Credit Card</li>
+					<li>Money Market Accounts</li>
+					<li>CD's</li>
+					<li>Mortgages</li>
+					<li>Home Equity Line of Credit (HELOC)</li>
+					<li>Employer-sponsored retirement accounts (401k, 403(b), and similar)</li> 
+					<li>Investment Retirement Accounts (IRA)</li>
+					<li>Brokerage Accounts</li>
+					</ul>
+					Think about all the accounts you have linked. Are there other accounts you may have forgotten and would like to link?
+				</p>
+			  </div>
+			</div>
 		</div>
 	</div>
-	<br/><br/>
 </div>
 
 <div id="success" class="panel-collapse collapse in">
@@ -46,10 +76,9 @@
 	  <div id="success_summary" class="card-header text-white bg-success"></div>
 	  <div class="card-body">
 	    <p class="card-text">Here is your updated reward credit..<br/><br/>
-			<samp>
 			New balance: $abc.df
-			</samp></p>
-			<p>Would you like to link an another institution?</p>
+		</p>
+		<p>Would you like to link an another institution?</p>
 	  </div>
 	</div>
 </div>
