@@ -24,59 +24,87 @@
 
 	<p>Your financial information will be kept secure and protected. Plaid will never share your login IDs, passwords, or any other personal information with UAS researchers or anyone else.</p>
 
-	<button id="link-btn" class="btn btn-lg btn-primary">Link Account with Plaid</button>
+	<button class="link-btn btn btn-lg btn-primary">Link Account with Plaid</button>
 	<br/><br/>
 </div>
 
 <div id="success" class="panel-collapse collapse in">
 	<div class="card mb-3">
-	  <div id="success_summary" class="card-header text-white bg-success"></div>
-	  <div class="card-body">
-	    <p class="card-text">Here is your updated reward credit..<br/><br/>
-			<samp>
-			New balance: $abc.df
-			</samp></p>
-			<p>Would you like to link an another institution?</p>
-
-	  </div>
+		<div class="card-body">
+	  		<h4 id="success_summary" class="card-title text-success"></h4>
+	  		<p class="card-text">Would you like to link an another institution?</p>
+	  	</div>
 	</div>
+	<p>
+		<button class="link-btn btn btn-lg btn-primary">Link Another Account</button>
+		<button class="link-btn-no ml-3 btn btn-lg btn-outline-info" value="1">No</button>
+	</p>
 </div>
-	
+
 <div id="failure" class="panel-collapse collapse in">
 	<div class="card mb-3">
-	  <div id="failure_summary" class="card-header text-white bg-danger" ></div>
-	  <div class="card-body">
-	    <p class="card-text">Would you like to link a different institution?</p>
-	  </div>
+		<div class="card-body">
+	  		<h4 id="failure_summary" class="card-title text-danger"></h4>
+	  		<p class="card-text">Would you like to link a different institution?</p>
+	  	</div>
 	</div>
+	<p>
+		<button class="link-btn btn btn-lg btn-primary">Link Another Account</button>
+		<button class="link-btn-no ml-3 btn btn-lg btn-outline-info" value="1">No</button>
+	</p>
 </div>
 
 <div id="are_you_sure" class="panel-collapse collapse in">
-	<p>These are the accounts often linked by other survey participants. Please take a look at this list:
-		<ul>
-		<li>Checking Accounts</li>
-		<li>Savings Accounts</li>
-		<li>Credit Card Accounts</li>
-		<li>Pre-paid Credit Card</li>
-		<li>Money Market Accounts</li>
-		<li>CD's</li>
-		<li>Mortgages</li>
-		<li>Home Equity Line of Credit (HELOC)</li>
-		<li>Employer-sponsored retirement accounts (401k, 403(b), and similar)</li> 
-		<li>Investment Retirement Accounts (IRA)</li>
-		<li>Brokerage Accounts</li>
-		</ul>
-		Think about all the accounts you have linked. Are there other accounts you may have forgotten and would like to link?
-	</p>
-</div>
-
-<div id="add_more" class="panel-collapse collapse in">
+	<div class="card border mb-3">
+	  <div class="card-body">
+	  	<h4 class="card-title">These are the accounts often linked by other survey participants. Please take a look at this list:</h4>
+	    <p class="card-text">
+	    	<ul>
+			<li>Checking Accounts</li>
+			<li>Savings Accounts</li>
+			<li>Credit Card Accounts</li>
+			<li>Pre-paid Credit Card</li>
+			<li>Money Market Accounts</li>
+			<li>CD's</li>
+			<li>Mortgages</li>
+			<li>Home Equity Line of Credit (HELOC)</li>
+			<li>Employer-sponsored retirement accounts (401k, 403(b), and similar)</li> 
+			<li>Investment Retirement Accounts (IRA)</li>
+			<li>Brokerage Accounts</li>
+			</ul>
+			Think about all the accounts you have linked. Are there other accounts you may have forgotten and would like to link?
+		</p>
+	  </div>
+	</div>
 	<p>
-		<button id="link-btn2" class="btn btn-lg btn-primary">Link Another Account</button>
-		<button id="link-btn-no" class="ml-3 btn btn-lg btn-outline-info">No</button>
+		<button class="link-btn btn btn-lg btn-primary">Link Another Account</button>
+		<button class="link-btn-no ml-3 btn btn-lg btn-outline-info" value="2">No</button>
 	</p>
 </div>
 
+<div id="final" class="panel-collapse collapse in">
+	<div class="card border mb-3">
+	  <div class="card-body">
+	  	<h4 class="card-title">Thank you for linking your financial institutions!</h4>
+	    <p class="card-text">
+	    	As a reminder, please be assured that we DO NOT have access to your credentials or any other identifying information.
+	    	<br/> 
+			Your financial information will be kept secure and protected. Plaid will never share your login IDs, passwords, or any other personal information with UAS researchers or anyone else.
+			<br/><br/>
+			You will be able to add financial institutions at any time in case you forget some or in case you establish relationships with new ones.
+			<br/><br/>
+			You will be able to unlink your financial institutions at any time if you wish to do so.
+			<br/><br/>
+			You can also unlink specific accounts within a financial institution. If you wish to do so, please let us know.
+			<br/><br/>
+			Now that you have linked your institutions, no further action is required and you will keep earning your monthly rewards. However, we may periodically ask you to refresh the links with your financial institutions if something changes. This will ensure that you will receive your monthly rewards.
+		</p>
+	  </div>
+	</div>
+	<p>
+		<button class="link-btn-dashboard btn btn-lg btn-outline-info">Go to dashboard</button>
+	</p>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
 <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
@@ -108,12 +136,10 @@
             if (data.duplicate) {
             	$('#failure_summary').html('"<strong>' + data.institution.name + '</strong>" account was previously linked!! </strong>');
             	$('#failure').show();
-            	$('.add_more').show();
             	$('#success').hide();
             } else {
             	$('#success_summary').html('Success! <strong>"' + data.institution.name + '"</strong> was succesfully linked to UASFin!');	
             	$('#success').show();
-            	$('#add_more').show();
             	$('#failure').hide();
             }
           });
@@ -121,28 +147,29 @@
       },
     });
     
-    $('#link-btn').on('click', function(e) {
+    $('.link-btn').on('click', function(e) {
 		handler.open();
     });
-
-    $('#link-btn2').on('click', function(e) {
-		handler.open();
-    });
-
-    $('#link-btn-dashboard').on('click', function(e) {
+    $('.link-btn-dashboard').on('click', function(e) {
 		window.location.href='/';
     });
 
-    $('#link-btn-no').on('click', function(e) {
-		$('#intro').hide();
-		$('#success').hide();
-		$('#failure').hide();
-		$('#are_you_sure').show();
-		$('#add_more').show();
+    $('.link-btn-no').on('click', function(e) {
+        if ($(this).val() == 1) {
+            $('#intro').hide();
+		    $('#success').hide();
+		    $('#failure').hide();
+		    $('#are_you_sure').show();
+    	} else {
+            $('#intro').hide();
+		    $('#success').hide();
+		    $('#failure').hide();
+		    $('#are_you_sure').hide();
+		    $('#final').show();
+    	}
     });
 
-
-     })(jQuery);
+    })(jQuery);
 
 function qs(key) {
     key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars

@@ -13,7 +13,7 @@
 						<h4>Liabilities: $zz,zzz.zz</h4>
 		    		</div>
 		    		<div class="float-right mt-3 mr-3">
-		      			<button id="link-btn" class="btn btn-lg btn-primary">Link Account with Plaid</button>
+		      			<button class="link-btn btn btn-lg btn-primary">Link Account with Plaid</button>
 		    		</div>
 				</div>
 				<div class="card-body bg-secondary">
@@ -45,8 +45,8 @@
 		<div class="col-md-4">
 			<div class="card">
 				<div class="card-header bg-success text-white">
-					<h6>Number of Active Institutions: {{ accounts|length }}</h6>
-					<h6>Monthly Rewards Summary: $123</h6></div>
+					<h6>Number of Institutions Linked: {{ accounts|length }}</h6>
+					<h6>Monthly Rewards Earnings: ${% widthratio 10 1 accounts|length %}</h6></div>
 			 </div>
 			<div class="card mt-2">
 			  <div class="card-body border border-warning">
@@ -75,32 +75,30 @@
 
 <div id="success" class="panel-collapse collapse in">
 	<div class="card mb-3">
-	  <div id="success_summary" class="card-header text-white bg-success"></div>
-	  <div class="card-body">
-	    <p class="card-text">Here is your updated reward credit..<br/><br/>
-			New balance: $abc.df
-		</p>
-		<p>Would you like to link an another institution?</p>
-	  </div>
+		<div class="card-body">
+	  		<h4 id="success_summary" class="card-title text-success"></h4>
+	  		<p class="card-text">Would you like to link an another institution?</p>
+	  	</div>
 	</div>
-</div>
-	
-<div id="failure" class="panel-collapse collapse in">
-	<div class="card mb-3">
-	  <div id="failure_summary" class="card-header text-white bg-danger" ></div>
-	  <div class="card-body">
-	    <p class="card-text">Would you like to link a different institution?</p>
-	  </div>
-	</div>
-</div>
-
-<div id="add_more" class="panel-collapse collapse in">
 	<p>
-		<button id="link-btn2" class="btn btn-lg btn-primary">Link Another Account</button>
-		<button id="link-btn-dashboard" class="ml-3 btn btn-lg btn-outline-info">Go to dashboard</button>
+		<button class="link-btn btn btn-lg btn-primary">Link Another Account</button>
+		<button class="link-btn-dashboard ml-3 btn btn-lg btn-outline-info">Go to dashboard</button>
 	</p>
 </div>
 
+<div id="failure" class="panel-collapse collapse in">
+	<div class="card mb-3">
+		<div class="card-body">
+	  		<h4 id="failure_summary" class="card-title text-danger"></h4>
+	  		<p class="card-text">Would you like to link a different institution?</p>
+	  	</div>
+	</div>
+	<p>
+		<button class="link-btn btn btn-lg btn-primary">Link Another Account</button>
+		<button class="link-btn-dashboard ml-3 btn btn-lg btn-outline-info">Go to dashboard</button>
+	</p>
+</div>
+	
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
 <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <script>
@@ -131,12 +129,10 @@
             if (data.duplicate) {
             	$('#failure_summary').html('"<strong>' + data.institution.name + '</strong>" account was previously linked!! </strong>');
             	$('#failure').show();
-            	$('#add_more').show();
             	$('#success').hide();
             } else {
             	$('#success_summary').html('Success! <strong>"' + data.institution.name + '"</strong> was succesfully linked to UASFin!');	
             	$('#success').show();
-            	$('#add_more').show();
             	$('#failure').hide();
             }
           });
@@ -144,15 +140,11 @@
       },
     });
     
-    $('#link-btn').on('click', function(e) {
+    $('.link-btn').on('click', function(e) {
 		handler.open();
     });
 
-    $('#link-btn2').on('click', function(e) {
-		handler.open();
-    });
-
-    $('#link-btn-dashboard').on('click', function(e) {
+    $('.link-btn-dashboard').on('click', function(e) {
 		window.location.href='/';
     });
 
