@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm
 from django.shortcuts import redirect
+from fin.models import Items, Item_accounts, Item_account_transactions
 
 def register(request):
     if request.user.is_authenticated:
@@ -21,7 +22,17 @@ def register(request):
 
 @login_required
 def profile(request):
-    return render(request, 'users/profile.html')
+    try:
+        user_institutions = Items.objects.filter(user_id = request.user).order_by('p_item_name')
+    except Items.DoesNotExist:
+        user_institutions = None
+        
+    context = {
+	    'title': "Profile",
+        'accounts': user_institutions,
+    }
+    
+    return render(request, 'users/profile.html', context)
 
 def passwordReset(request):
-    return render(request, 'users/password_reset.html')
+    return render(request, 'users/passwd_reset.html')

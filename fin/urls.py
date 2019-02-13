@@ -8,4 +8,5 @@ urlpatterns = [
     path('help/', views.help, name='help'),
     path( settings.PLAID_WEBHOOK_URL, views.webhook, name='webhook'),
     path('get_access_token/', views.get_access_token),
+    path('remove_item/<int:item_id>', views.remove_item),
 ]

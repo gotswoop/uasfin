@@ -15,6 +15,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .models import Items, Item_accounts, Item_account_transactions
 from django.conf import settings
+from django.contrib import messages
 import logging
 
 access_token = None
@@ -27,14 +28,14 @@ logger = logging.getLogger(__name__)
 @login_required()
 def home(request):
   try:
-    user_institutions = Items.objects.filter(user_id = request.user)
+    user_institutions = Items.objects.filter(user_id = request.user).order_by('p_item_name')
   except Items.DoesNotExist:
   	user_institutions = None
 
   if user_institutions:
     accounts = {}
     for inst in user_institutions:
-      temps = Item_accounts.objects.filter(items_id = inst)
+      temps = Item_accounts.objects.filter(items_id = inst).order_by('p_account_name')
       a = []
       for temp in temps:
         x_temp = {'fin_account_id': temp.id, 'fin_account_name': temp.p_account_name, "fin_account_official_name": temp.p_account_official_name, "fin_account_subtype": temp.p_account_subtype, "fin_account_balance": temp.p_account_balance_current}
@@ -43,6 +44,7 @@ def home(request):
   else:
     accounts = None
   
+  # Configuring the webhook here..
   webhook_url = 'https://' + request.get_host() + '/' + settings.PLAID_WEBHOOK_URL
   
   # logger.debug(webhook_url)
@@ -151,7 +153,7 @@ def pretty_print_response(response):
   print(json.dumps(response, indent=2, sort_keys=True))
 
 # ------------------------------------------------------------------
-# WEBHOOK
+# WEBHOOK - Incoming connection
 # ------------------------------------------------------------------
 @require_http_methods(["POST"])
 @csrf_exempt
@@ -174,7 +176,9 @@ def webhook(request):
         	print("# 11234: SHOULD NOT BE IN HERE!!!!!")
     return HttpResponse("")
 
-# Retrieve Transactions for an Item
+# ------------------------------------------------------------------
+# Get Transactions for an item
+# ------------------------------------------------------------------
 def get_transactions(item_id):
   # Pull transactions for the last 1095 days (3 years)
   logger.debug(item_id)
@@ -246,11 +250,14 @@ def get_transactions(item_id):
 
   return ""
   
-
+# ------------------------------------------------------------------
+# Account details view
+# ------------------------------------------------------------------
 def account_details(request, account_id):
 	
     try:
-        transactions = Item_account_transactions.objects.filter(item_accounts_id = account_id).order_by('-p_date')
+        transactions = Item_account_transactions.objects.filter(item_accounts_id = account_id).order_by('-p_date')[:20]
+        # TODO: Limit 60 days of transactions
     except Item_account_transactions.DoesNotExist:
         transactions = None
 
@@ -267,4 +274,43 @@ def account_details(request, account_id):
         }
         return render(request, 'fin/transactions.html', context)
     else:
+        messages.warning(request, format('Account refresh pending. Please check back again.'))
         return redirect('home')
+
+# ------------------------------------------------------------------
+# Remove item (TESTING ONLY)
+# ------------------------------------------------------------------
+@login_required()
+def remove_item(request, item_id):
+	
+    try:
+        item = Items.objects.get(id = item_id, user_id = request.user)
+    except Items.DoesNotExist:
+        item = None
+
+    if item:
+    	# Provide the access token for the Item you want to remove
+    	# TODO - this does not work!!!!!!!!!
+        try:
+            response = client.Item.remove(item.p_access_token)
+        except plaid.errors.PlaidError as e:
+            return JsonResponse(format_error(e))
+
+        pretty_print_response(response)
+        if response['removed'] == True:
+        	item.delete()
+        else:
+            messages.warning(request, format('Something went wrong. Please report to help desk.'))
+            return redirect('profile')
+        
+        messages.success(request, format(item.p_item_name + ' Removed.'))
+        return redirect('profile')
+    else:
+        messages.warning(request, format('Invalid Operation.'))
+        return redirect('profile')
+
+# ------------------------------------------------------------------
+# Remove item (TESTING ONLY)
+# ------------------------------------------------------------------
+def format_error(e):
+  return {'error': {'display_message': e.display_message, 'error_code': e.code, 'error_type': e.type, 'error_message': e.message } }
