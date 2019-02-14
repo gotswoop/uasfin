@@ -37,15 +37,15 @@
 					        {% else %}
 					            <div id="collapse{{ cnt }}" class="collapse" aria-labelledby="heading{{ cnt }}" data-parent="#accordionAccount">
 					        {% endifequal %}
-						      <div class="card-body border border-info">
-						        <table class="table table-grey table-sm table-hover table-bordered bg-white">
-								<thead><tr><th>#</th><th>Account</th><th>Details</th><th>Type</th><th>Balance</th></tr></thead>
+						      <div class="card-body bg-white border border-info">
+						        <table class="table table-sm table-hover table-bordered bg-white">
+								<thead class="thead-light"><tr><th>#</th><th>Account</th><th>Details</th><th>Type</th><th>Balance</th></tr></thead>
 								<tbody>
 									{% for x in value %}
 									<tr>
 										<td>{{ forloop.counter }}</td>
 										<td><a class="text-info nounderline" href="{% url 'account_details' account_id=x.fin_account_id %}">{{ x.fin_account_name }}</a></td>
-										<td>{{ x.fin_account_official_name }}</td>
+										<td>{{ x.fin_account_official_name|truncatechars:20 }}</td>
 										<td>{{ x.fin_account_subtype|title }}</td>
 										<td>$ {{ x.fin_account_balance|floatformat:2|intcomma }}</td>
 									</tr>
