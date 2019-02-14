@@ -256,7 +256,7 @@ def get_transactions(item_id):
 def account_details(request, account_id):
 	
     try:
-        transactions = Item_account_transactions.objects.filter(item_accounts_id = account_id).order_by('-p_date')[:20]
+        transactions = Item_account_transactions.objects.filter(item_accounts_id = account_id).order_by('-p_date')[:60]
         # TODO: Limit 60 days of transactions
     except Item_account_transactions.DoesNotExist:
         transactions = None
