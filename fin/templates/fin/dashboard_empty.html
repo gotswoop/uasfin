@@ -2,7 +2,7 @@
 {% block content %}
 {% load humanize %}
 
-<div id="intro">
+<div id="intro" class="border border border-success p-4	">
 	<h4>Welcome to the UASFin Study!</h4>
 	<hr/>
 	<p>To participate in this study, you will link your financial institution accounts to our secure website. This is done through Plaid, a company trusted by millions of consumers to connect their bank and other financial accounts with software applications that can help them manage their spending and save for retirement.</p>
@@ -10,7 +10,7 @@
 	<p>The linking process is simple: 
 
 	<ol>
-	<li>Click on "Link Account with Plaid"</li>
+	<li>Click on "Link Account using Plaid"</li>
 	<li>Find your financial institution in the list or search for it using the search box</li>
 	<li>Click on your financial institution logo</li>
 	<li>Enter your financial institution credentials and click "Submit"</li>
@@ -18,21 +18,21 @@
 
 	<p>Repeat steps 1-4 for each of your financial institutions. Once your financial institutions are linked, you will see all your accounts on our secure website and will be able to easily keep track of your financial transactions and account balances in one place.</p>
 
-	<p>For each financial institution you link, you will earn a reward of <font class="bg-success">$X</font> right now, plus a reward of <font class="bg-success">$Y</font> every month (as long as your financial institution remains linked). The green box on the screen tells you how much rewards how have earned as you link institutions.</p>
+	<p>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month (as long as your financial institution remains linked). The green box on the screen tells you how much rewards you have earned as you link institutions.</p>
 
 	<p>Remember, <strong>we will NOT have access to your credentials or any other identifying information.</strong></p>
 
 	<p>Your financial information will be kept secure and protected. Plaid will never share your login IDs, passwords, or any other personal information with UAS researchers or anyone else.</p>
 
-	<button class="link-btn btn btn-lg btn-primary">Link Account with Plaid</button>
-	<br/><br/>
+	<button class="link-btn btn btn-lg btn-primary">Link Account using Plaid</button>
+	<br/>
 </div>
 
 <div id="success" class="panel-collapse collapse in">
 	<div class="card mb-3">
 		<div class="card-body">
 	  		<h4 id="success_summary" class="card-title text-success"></h4>
-	  		<p class="card-text">Would you like to link another institution?</p>
+	  		<p class="card-text pt-2">Would you like to link another institution? <br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
 	  	</div>
 	</div>
 	<p>
@@ -45,7 +45,7 @@
 	<div class="card mb-3">
 		<div class="card-body">
 	  		<h4 id="failure_summary" class="card-title text-danger"></h4>
-	  		<p class="card-text">Would you like to link a different institution?</p>
+	  		<p class="card-text pt-2">Would you like to link a different institution? <br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
 	  	</div>
 	</div>
 	<p>

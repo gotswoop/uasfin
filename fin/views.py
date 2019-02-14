@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 @login_required()
 def home(request):
   try:
-    user_institutions = Items.objects.filter(user_id = request.user).order_by('p_item_name')
+    user_institutions = Items.objects.filter(user_id = request.user).order_by('-date_created')
   except Items.DoesNotExist:
   	user_institutions = None
 
