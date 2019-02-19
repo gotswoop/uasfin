@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm
 from django.shortcuts import redirect
 from fin.models import Items, Item_accounts, Item_account_transactions
+from django.http import HttpResponse
 
 def register(request):
     if request.user.is_authenticated:
@@ -36,3 +37,15 @@ def profile(request):
 
 def passwordReset(request):
     return render(request, 'users/passwd_reset.html')
+
+def ping(request):
+	ip = get_client_ip(request)
+	return HttpResponse('<html>OK<br/>' + ip + '</html>')
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
