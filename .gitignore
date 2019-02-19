@@ -1,7 +1,3 @@
-_setup
 /static/
 /media/
-*.sql
-*.log
-_venv
 __pycache__
