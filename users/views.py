@@ -36,6 +36,9 @@ def profile(request):
     return render(request, 'users/profile.html', context)
 
 def passwordReset(request):
+	if request.user.is_authenticated:
+        return redirect('dashboard')
+
     return render(request, 'users/passwd_reset.html')
 
 def ping(request):
