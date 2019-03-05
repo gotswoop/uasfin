@@ -36,11 +36,11 @@
 	  {% endif %}
 	
 	  <li class="nav-item">
-	    <a class="ml-3 nav-link" href="/help/">Help</a>
+	    <a class="ml-3 nav-link" href="/help/">Help / About</a>
 	  </li>
 	</ul>
 	{% if user.is_authenticated %}
-		<a href="{% url 'profile' %}">{{ user.first_name }} {{ user.last_name }} </a>
+		<a href="{% url 'profile' %}">My Account ({{ user.username }})</a>
 		<a class="btn btn-outline-info ml-3" href="{% url 'logout' %}">Logout</a>
 	{% else %}
 		<a class="btn btn-outline-info" href="{% url 'login' %}">Login</a>

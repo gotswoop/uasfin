@@ -37,7 +37,7 @@ def profile(request):
 
 def passwordReset(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('home')
 
     return render(request, 'users/passwd_reset.html')
 

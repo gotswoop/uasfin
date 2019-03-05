@@ -2,20 +2,30 @@
 {% block content %}
 {% load humanize %}
 
+<ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'account_details' item_id=account.items_id.pk %}">{{ account.items_id.p_item_name }}</a></li>
+  <li class="breadcrumb-item active">{{ account.p_account_name }} </li>
+</ol>
+
 <div id="intro">
 	<div class="card border border-success bg-light">
 		<div class="card-header">
 			<div class="float-left">
-	      		<h4 class="text-info">{{ account.items_id.p_item_name }} - {{ account.p_account_name }}</h4>
+	      		<h6>List of transactions for: </a></h6>
+	      		<h3 class="text-info">{{ account.p_account_name }} ({{ account.items_id.p_item_name}})</h3>
 				<p>
 					<strong>Details: </strong>{{ account.p_account_official_name }}<br/>
+					<strong>Last Updated: </strong>{{ account.date_updated|date:"M d, Y" }}<br/>
 					<strong>Type: </strong>{{ account.p_account_subtype|title }}<br/>
 					<strong>Balance: </strong>$ {{ account.p_account_balance_current|floatformat:2|intcomma }}
 				</p>
     		</div>
 		</div>
 		<div class="card-body bg-white">
+			<h6>List of transactions for {{ account.p_account_name }}:</h6>
 			<table class="table table-sm table-hover table-bordered bg-white">
+				<caption><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.items_id.pk %}">Back to {{ account.items_id.p_item_name }}</a></caption>
 				<thead class="thead-light"><tr><th>#</th><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr></thead>
 				<tbody>
 					{% for transaction in transactions %}
@@ -33,7 +43,6 @@
 			</table>
 		</div>
 		<div class="card-footer text-muted">
-		    Last refreshed on {{ account.date_updated|date:"M d, Y" }}
 		</div>
 	</div>
 	<br/><br/>

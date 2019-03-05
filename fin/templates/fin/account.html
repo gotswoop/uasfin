@@ -1,0 +1,46 @@
+{% extends 'fin/base.html' %}
+{% block content %}
+{% load humanize %}
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
+  <li class="breadcrumb-item active">{{ item.p_item_name }} </li>
+</ol>
+<div id="intro">
+	<div class="card border border-success bg-light">
+		<div class="card-header">
+			<div class="float-left">
+	      		<h6>Account details for:</a></h6>
+	      		<h3 class="text-info">{{ item.p_item_name }}</h3>
+				<p>
+					<strong>Linked On: </strong>{{ item.date_created|date:"M d, Y" }}<br/>
+					<strong>Status: </strong>Active<br/>
+				</p>
+    		</div>
+		</div>
+		<div class="card-body bg-white">
+			<h6>List of accounts in {{ item.p_item_name }}:</h6>
+			<table class="table table-sm table-hover table-bordered bg-white">
+				<caption><a class="btn btn-outline-info btn-sm" href="{% url 'home'  %}">Back to Dashboard</a></caption>	
+				<thead class="thead-light"><tr><th>#</th><th>{{ item.p_item_name}} Accounts</th><th>Details</th><th>Type</th><th>Balance</th><th>Last Updated</th></tr></thead>
+				<tbody>
+					{% for account in accounts %}
+					{% with cnt=forloop.counter %}
+					<tr>
+						<td>{{ cnt }}</td>
+						<td><a class="text-info nounderline" href="{% url 'account_transactions' item_id=item.id account_id=account.id %}">{{ account.p_account_name }}</a></td>
+						<td>{{ account.p_account_official_name|default_if_none:"-"|truncatechars:20 }}</td>
+						<td>{{ account.p_account_subtype|title }}</td>
+						<td>$ {{ account.p_account_balance_current|floatformat:2|intcomma }}</td>
+						<td>{{ account.date_updated|date:"M d, Y" }}</td>
+					</tr>
+					{% endwith %}
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<br/><br/>
+</div>
+
+{% endblock content %}

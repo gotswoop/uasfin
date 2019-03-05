@@ -4,7 +4,6 @@ import datetime
 import plaid
 import json
 #import time
-from pprint import pprint
 
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -17,6 +16,7 @@ from .models import Items, Item_accounts, Item_account_transactions
 from django.conf import settings
 from django.contrib import messages
 import logging
+from django.core import serializers
 
 access_token = None
 client = plaid.Client(client_id=settings.PLAID_CLIENT_ID, secret=settings.PLAID_SECRET, public_key=settings.PLAID_PUBLIC_KEY, environment=settings.PLAID_ENV, api_version='2018-05-22')
@@ -35,19 +35,13 @@ def home(request):
   if user_institutions:
     accounts = {}
     for inst in user_institutions:
-      temps = Item_accounts.objects.filter(items_id = inst).order_by('p_account_name')
-      a = []
-      for temp in temps:
-        x_temp = {'fin_account_id': temp.id, 'fin_account_name': temp.p_account_name, "fin_account_official_name": temp.p_account_official_name, "fin_account_subtype": temp.p_account_subtype, "fin_account_balance": temp.p_account_balance_current}
-        a.append(x_temp)
-      accounts[inst.p_item_name] = a
+      accounts[inst.p_item_name] = Item_accounts.objects.filter(items_id = inst).order_by('p_account_name')
   else:
     accounts = None
   
   # Configuring the webhook here..
   webhook_url = 'https://' + request.get_host() + '/' + settings.PLAID_WEBHOOK_URL
   
-  # logger.debug(webhook_url)
   context = {
 	    'title': "Dashboard",
         'accounts': accounts,
@@ -76,24 +70,23 @@ def get_access_token(request):
   
   global access_token  ## TODO: YIKES
   public_token = request.POST.get('public_token', '')
-  print("PUBLIC_TOKEN", public_token)
- 
+  
   try:
     exchange_response = client.Item.public_token.exchange(public_token)
   except plaid.errors.PlaidError as e:
     return JsonResponse(format_error(e))
 
   access_token = exchange_response['access_token'] 
-  logger.debug("Item Added (access token): " + access_token) ## TODO: Debug
-  pretty_print_response(exchange_response)
+  logger.debug("#---------------------------------") # Starting with an empty new line
+  logger.debug('New item 1 of 4: ' + json.dumps(exchange_response))
 
   # Get item info using token
   item_response = client.Item.get(access_token)
-  pretty_print_response(item_response)
+  logger.debug('New item 2 of 4: ' + json.dumps(item_response))
 
   # Get more item info using item institution id
   institution_response = client.Institutions.get_by_id(item_response['item']['institution_id'])
-  pretty_print_response(institution_response)
+  logger.debug('New item 3 of 4: ' + json.dumps(institution_response))
 
   try:
     already_exists = Items.objects.get(user_id = request.user, p_institution_id = item_response['item']['institution_id'])
@@ -102,6 +95,9 @@ def get_access_token(request):
 
   if already_exists:
   	# Return to dashboard if it's a duplicate
+  	# logger.debug("New item 4 of 4 (DUPLICATE): (user_id - Access_tk - Item_id - Inst_id - Inst_name): " + str(already_exists.user_id) + " - " + already_exists.p_access_token + " - " + already_exists.p_institution_id + " - " + already_exists.p_item_name) ## TODO: Log this into user actions
+  	logger.debug('New item 4 of 4 (DUPLICATE): ' + serializers.serialize('json', [already_exists]))
+  	logger.debug("#---------------------------------") # Ending with an empty new line
   	return JsonResponse({'error': None, 'auth': exchange_response, 'item': item_response['item'], 'institution': institution_response['institution'], 'duplicate': 1})
   else:
   	# Add record
@@ -112,22 +108,24 @@ def get_access_token(request):
 	       p_institution_id = item_response['item']['institution_id'], 
 	       p_item_name = institution_response['institution']['name'],
     )
+    # logger.debug("New item 4 of 4 (INSERTED): (user_id - Access_tk - Item_id - Inst_id - Inst_name): " + str(request.user.id) + " - " + new_item.p_access_token + " - " + new_item.p_institution_id + " - " + new_item.p_item_name) ## TODO: Log this into user actions
+    logger.debug('New item 4 of 4 (INSERTED): ' + serializers.serialize('json', [new_item]))
 
   # Get item_accounts and insert into database.
   try:
     accounts_response = client.Accounts.get(access_token)
   except plaid.errors.PlaidError as e:
     return jsonify({'error': {'display_message': e.display_message, 'error_code': e.code, 'error_type': e.type } })
-  
-  pretty_print_response(accounts_response)
+  logger.debug('New accounts (raw): ' + json.dumps(accounts_response))
 
   if accounts_response:
     if accounts_response['item']['error'] is not None:
-        print("YIKES")
+        logger.error('Could not find accounts for item_id ' + new_item.id)
     else:
         accounts = accounts_response['accounts']
+        cnt = 1
         for account in accounts:
-            Item_accounts.objects.create(
+            new_account = Item_accounts.objects.create(
 			items_id = new_item,
 			p_account_id = account['account_id'],
 			p_account_balance_available = account['balances']['available'],
@@ -141,7 +139,10 @@ def get_access_token(request):
 			p_account_subtype = account['subtype'],
 			p_account_type = account['type']
 			)
+            logger.debug('New account ' + str(cnt) + ' (INSERTED): ' +  serializers.serialize('json', [new_account]))
+            cnt = cnt + 1
 
+  logger.debug("#---------------------------------") # Ending with an empty new line
   # TODO: Don't send access_token and item_id to client
   return JsonResponse({'error': None, 'auth': exchange_response, 'item': item_response['item'], 'institution': institution_response['institution'], 'duplicate': 0})
 								
@@ -155,25 +156,26 @@ def pretty_print_response(response):
 # ------------------------------------------------------------------
 # WEBHOOK - Incoming connection
 # ------------------------------------------------------------------
+# TODO: restrict access to specific subnets
 @require_http_methods(["POST"])
 @csrf_exempt
 def webhook(request):
-    out = 'Incoming payload from Plaid...\n'
     incoming = {}
     incoming = json.loads(request.body.decode('UTF-8')) # decode needed for python < 3.6
-    for key, value in incoming.items():
-        temp = '\t' + str(key) + ": " + str(value) + '\n'
-        out +=temp
-    logger.debug(out)
+    #for key, value in incoming.items():
+    #       temp = '\t' + str(key) + ": " + str(value) + '\n'
+    #       out +=temp
+    logger.debug('Incoming payload from Plaid: ' + json.dumps(incoming)) 
     # Check other webhook_types and only if ERROR is NONE
     if incoming['webhook_type'] == "TRANSACTIONS":
         if incoming['webhook_code'] in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "DEFAULT_UPDATE"]:
+            logger.debug('Getting transactions for item_id = ' + incoming['item_id'])
             get_transactions(incoming['item_id'])
-        elif incoming['webhook_code'] == "TRANSACTIONS_REMOVED":
+        elif incoming['webhook_code'] == "TRANSACTIONS_REMOVED":                
             # remove_transactions()
-            print("# Rare remove transaction event")
+            logger.debug('Rare remove transactions for item_id = ' + incoming['item_id'])
         else:
-        	print("# 11234: SHOULD NOT BE IN HERE!!!!!")
+        	logger.debug('*** Should not be in here. item_id = ' + incoming['item_id'])
     return HttpResponse("")
 
 # ------------------------------------------------------------------
@@ -181,40 +183,39 @@ def webhook(request):
 # ------------------------------------------------------------------
 def get_transactions(item_id):
   # Pull transactions for the last 1095 days (3 years)
-  logger.debug(item_id)
   try:
     res = Items.objects.values('p_access_token').get(p_item_id = item_id)
   except Items.DoesNotExist:
+    logger.debug('### No corresponding entry for ' + item_id + ' in fin_items table')
     res = None
 
   if res == None:
-    logger.debug("### HAHA: Still getting records for old shit")
+    logger.debug('### ARGH: Still getting records for old sandboxes and deployments')
     return ""
 
   access_token = res['p_access_token']
-  start_date = '{:%Y-%m-%d}'.format(datetime.datetime.now() + datetime.timedelta(-600))
+  start_date = '{:%Y-%m-%d}'.format(datetime.datetime.now() + datetime.timedelta(-730))
   end_date = '{:%Y-%m-%d}'.format(datetime.datetime.now())
   try:
     transactions_response = client.Transactions.get(access_token, start_date, end_date)
   except plaid.errors.PlaidError as e:
     return jsonify(format_error(e))
   
-  # pretty_print_response(transactions_response)
+  #pretty_print_response(transactions_response)
   for transaction in transactions_response['transactions']:
     account_id = transaction['account_id']
     item_account_obj = Item_accounts.objects.get(p_account_id = account_id)
     if item_account_obj:
-
         try:
-            already_exists = Item_account_transactions.objects.get(p_transaction_id = transaction['transaction_id'], item_accounts_id = item_account_obj.id)
+            already_exists = Item_account_transactions.objects.get(p_transaction_id = transaction['transaction_id'], item_accounts_id = item_account_obj)
         except Item_account_transactions.DoesNotExist:
             already_exists = None
 
         if already_exists:
-        	# TODO: Update it?
-        	return ""
+        	# Skip to next transaction
+        	continue
 
-        Item_account_transactions.objects.create(
+        new_transaction = Item_account_transactions.objects.create(
            item_accounts_id = item_account_obj,
            p_account_id = transaction['account_id'],
            p_account_owner = transaction['account_owner'],
@@ -245,15 +246,46 @@ def get_transactions(item_id):
            p_transaction_type = transaction['transaction_type'],
            p_unofficial_currency_code = transaction['unofficial_currency_code']
         )
+        # logger.debug('TRANSACTIONS ADDED: ' + serializers.serialize('json', [new_transaction]))
+        logger.debug('TRANSACTIONS ADDED: ' + new_transaction.p_transaction_id)
     else:
-        print("### THIS WAS NEVER SUPPOSED TO HAPPEN")
+        logger.debug('ERROR: Cannot find the account that we are trying to add or update transactions into')
 
   return ""
   
 # ------------------------------------------------------------------
-# Account details view
+# Account details view for a specific item id
 # ------------------------------------------------------------------
-def account_details(request, account_id):
+@login_required()
+def account_details(request, item_id):
+	
+    try:
+        # TODO: Limit 60 days of transactions
+        accounts = Item_accounts.objects.filter(items_id = item_id).filter(items_id__user_id=request.user).order_by('p_account_name')
+    except Item_accounts.DoesNotExist:
+        accounts = None
+
+    if accounts:
+    	# getting account information
+        try:
+            item = Items.objects.get(id = item_id)
+        except Items.DoesNotExist:
+        	item = None
+
+        context = {
+            'accounts': accounts,
+            'item': item
+        }
+        return render(request, 'fin/account.html', context)
+    else:
+        messages.warning(request, format('Invalid operation.'))
+        return redirect('home')
+
+# ------------------------------------------------------------------
+# Transactions detail page for a specific account
+# ------------------------------------------------------------------
+@login_required()
+def account_transactions(request, item_id, account_id):
 	
     try:
         # TODO: Limit 60 days of transactions
@@ -275,7 +307,9 @@ def account_details(request, account_id):
         return render(request, 'fin/transactions.html', context)
     else:
         messages.warning(request, format('Account refresh pending. Please check back again.'))
-        return redirect('home')
+        url = '/details/' + str(item_id)
+        return redirect(url)
+
 
 # ------------------------------------------------------------------
 # Remove item (TESTING ONLY)
@@ -296,9 +330,9 @@ def remove_item(request, item_id):
         except plaid.errors.PlaidError as e:
             return JsonResponse(format_error(e))
 
-        pretty_print_response(response)
         if response['removed'] == True:
         	item.delete()
+        	logger.debug('REMOVE ITEM - User ' + str(request.user.id) + ' removed item id ' + str(item_id) + ' : ' + json.dumps(response))
         else:
             messages.warning(request, format('Something went wrong. Please report to help desk.'))
             return redirect('profile')

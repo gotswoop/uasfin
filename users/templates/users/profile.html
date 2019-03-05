@@ -1,22 +1,25 @@
 {% extends "fin/base.html" %}
 {% load crispy_forms_tags %}
+{% load auth_extras %}
 {% block content %}
     <div class="container">
 		<div class="card border-info">
 		  <div class="card-body">
-		    <h3 class="card-title">{{ user.first_name }} {{ user.last_name }}</h3>
+		    <h3 class="card-title">My Account</h3>
 		    <p class="card-text">
+		    	{% if request.user|has_group:"cesr_team" %} 
+    				<h6 class="text-danger font-weight-bold">CESR Team Member</h6> 
+				{% endif %}
 		    	Username: {{ user.username }}<br/>
-		    	Email: {{ user.email }}<br/>
 		    	Date Joined: {{ user.date_joined|date:"M d Y" }}<br/><br/>
 		    </p>
 		    {% if accounts %}
 		    <h5>Manage Institutions (Avaiable during testing for internal staff only)</h5>
 		    <table class="table table-striped">
-		    	<thead><tr><th>#</th><th>Institution</th><th>Added On</th><th>Remove?</th></tr></thead>
+		    	<thead><tr><th>#</th><th>Institution</th><th>Added On</th><th>Status</th><th>Last Refreshed</th><th>Action</th></tr></thead>
 		    	<tbody>
 		    	{% for account in accounts %}
-		    		<tr><td>{{ forloop.counter }}</td><td>{{ account.p_item_name }}</td><td>{{ account.date_created|date:"Y-m-d" }}</td><td><a class="btn btn-danger" role="button" href="/remove_item/{{ account.id }}">Remove (Cannot be undone)</a></td></tr>
+		    		<tr><td>{{ forloop.counter }}</td><td>{{ account.p_item_name }}</td><td>{{ account.date_created|date:"Y-m-d" }}</td><td>{% if account.active == 1 %}Active{% else %}INACTIVE{% endif %}</td><td>{{ account.date_updated|date:"Y-m-d" }}</td><td><a class="btn btn-danger" role="button" href="/remove_item/{{ account.id }}">Remove Accout</a></td></tr>
 		    	{% endfor %}
 		    	</tbody>
 		    </table>

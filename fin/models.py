@@ -66,6 +66,7 @@ class Item_account_transactions(models.Model):
 	p_transaction_id = models.CharField(max_length=100, null=True)
 	p_transaction_type = models.CharField(max_length=50, null=True)
 	p_unofficial_currency_code = models.CharField(max_length=5, null=True)
+	removed = models.IntegerField(default=0)
 	date_created = models.DateTimeField(auto_now_add=True)
 	date_updated = models.DateTimeField(null=True, auto_now=True)
 
