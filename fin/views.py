@@ -27,30 +27,25 @@ logger = logging.getLogger(__name__)
 # ------------------------------------------------------------------
 @login_required()
 def home(request):
-  try:
-    user_institutions = Items.objects.filter(user_id = request.user).order_by('-date_created')
-  except Items.DoesNotExist:
-  	user_institutions = None
 
-  if user_institutions:
-    accounts = {}
-    for inst in user_institutions:
-      accounts[inst.p_item_name] = Item_accounts.objects.filter(items_id = inst).order_by('p_account_name')
-  else:
-    accounts = None
-  
+  try:
+    items = Items.objects.filter(user_id = request.user).order_by('p_item_name')
+  except Items.DoesNotExist:
+  	items = None
+
   # Configuring the webhook here..
   webhook_url = 'https://' + request.get_host() + '/' + settings.PLAID_WEBHOOK_URL
   
   context = {
 	    'title': "Dashboard",
-        'accounts': accounts,
+        'items': items,
         'plaid_public_key': settings.PLAID_PUBLIC_KEY,
 		'plaid_environment': settings.PLAID_ENV,
 		'plaid_products': settings.PLAID_PRODUCTS,
 		'plaid_webhook_url': webhook_url
   }
-  if accounts:
+
+  if items:
     return render(request, 'fin/dashboard.html', context)
   else:
     return render(request, 'fin/dashboard_empty.html', context)

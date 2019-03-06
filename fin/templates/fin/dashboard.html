@@ -12,60 +12,31 @@
 			<div class="card border bg-light">
 				<div class="card-header">
 					<div class="float-left">
-						&nbsp;<br/>
-			    
-			      		<h5>My Accounts ({{ accounts|length }})</h5>
-					<!--
-						<h6>Assets: $yy,yyy.yy</h6>
-						<h6>Liabilities: $zz,zzz.zz</h6>
-					-->
+						&nbsp;
+						<br/>
+			      		<h5>My Linked Accounts ({{ items|length }})</h5>
 		    		</div>
 		    		<div class="float-right mt-3 mr-3">
 		      			<button class="link-btn btn btn-lg btn-primary">Link Another Account</button>
 		    		</div>
 				</div>
 				<div class="card-body bg-white">
-					<div class="accordion" id="accordionAccount">
-						{% for key, value in accounts.items %}
-						{% with cnt=forloop.counter %}
-						<div class="card">
-						    <div class="card-header" id="heading{{ cnt }}">
-						      <h2 class="mb-0">
-						        <button class="btn btn-link text-info nounderline" type="button" data-toggle="collapse" data-target="#collapse{{ cnt }}" aria-expanded="true" aria-controls="collapse1">
-						          <h5>{{ cnt }}. {{ key }}</h5>
-						        </button>
-						      </h2>
-						    </div>
-						    {% ifequal cnt 1%}
-						        <div id="collapse{{ cnt }}" class="collapse show" aria-labelledby="heading{{ cnt }}" data-parent="#accordionAccount">
-					        {% else %}
-					            <div id="collapse{{ cnt }}" class="collapse" aria-labelledby="heading{{ cnt }}" data-parent="#accordionAccount">
-					        {% endifequal %}
-						      <div class="card-body bg-white border border-info">
-						        <table class="table table-sm table-hover table-bordered bg-white">
-						        <caption><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=value.first.items_id.pk %}">{{ key }} Details</a></caption>	
-								<thead class="thead-light"><tr><th>#</th><th>Account</th><th>Details</th><th>Type</th><th>Balance</th></tr></thead>
-								<tbody>
-									{% for x in value %}
-									<tr>
-										<td>{{ forloop.counter }}</td>
-										<td>{{ x.p_account_name }}</td>
-										<td>{{ x.p_account_official_name|default_if_none:"-"|truncatechars:20 }}</td>
-										<td>{{ x.p_account_subtype|title }}</td>
-										<td>$ {{ x.p_account_balance_current|floatformat:2|intcomma }}</td>
-									</tr>
-									{% endfor %}
-								</tbody>
-							</table>
-						      </div>
-						    </div>
-						  </div>
-						{% endwith %}
-						{% endfor %}
-					</div>
+					<h6>Click on institution name for more details:</h6>
+			        <table class="table bg-white">
+						<tbody>
+							{% for item in items %}
+							{% with cnt=forloop.counter %}
+							<tr>
+								<td style="width: 85%"><a class="btn btn-outline-info btn-md btn-block text-left" href="{% url 'account_details' item_id=item.id %}">{{ cnt }}. {{ item.p_item_name }}</a></td>
+								<td><span class="text-success">Active</span></td>
+							</tr>
+							{% endwith %}
+							{% endfor %}
+						</tbody>
+					</table>
 				</div>
 				<div class="card-footer">
-					You have {{ accounts|length }} financial institution{% ifnotequal accounts|length 1 %}s{% endifnotequal %} linked. For each additional institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month.
+					You have {{ items|length }} financial institution{% ifnotequal items|length 1 %}s{% endifnotequal %} linked. For each additional institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month.
 				</div>
 			</div>
 			<br/><br/>
@@ -73,8 +44,8 @@
 		<div class="col-md-4">
 			<div class="card">
 				<div class="card-header bg-success text-white">
-					<h6>Number of Institutions Linked: {{ accounts|length }}</h6>
-					<h6>Monthly Rewards Earnings: ${% widthratio 5 1 accounts|length %}</h6></div>
+					<h6>Number of Institutions Linked: {{ items|length }}</h6>
+					<h6>Monthly Rewards Earnings: ${% widthratio 5 1 items|length %}</h6></div>
 			 </div>
 			<div class="card mt-2">
 			  <div class="card-body border border-success">

@@ -14,12 +14,12 @@
 	      		<h3 class="text-info">{{ item.p_item_name }}</h3>
 				<p>
 					<strong>Linked On: </strong>{{ item.date_created|date:"M d, Y" }}<br/>
-					<strong>Status: </strong>Active<br/>
+					<strong>Status: </strong><span class="text-success">Active</span><br/>
 				</p>
     		</div>
 		</div>
 		<div class="card-body bg-white">
-			<h6>List of accounts in {{ item.p_item_name }}:</h6>
+			<h6>List of accounts in {{ item.p_item_name }}. Click for transaction log:</h6>
 			<table class="table table-sm table-hover table-bordered bg-white">
 				<caption><a class="btn btn-outline-info btn-sm" href="{% url 'home'  %}">Back to Dashboard</a></caption>	
 				<thead class="thead-light"><tr><th>#</th><th>{{ item.p_item_name}} Accounts</th><th>Details</th><th>Type</th><th>Balance</th><th>Last Updated</th></tr></thead>
@@ -28,7 +28,7 @@
 					{% with cnt=forloop.counter %}
 					<tr>
 						<td>{{ cnt }}</td>
-						<td><a class="text-info nounderline" href="{% url 'account_transactions' item_id=item.id account_id=account.id %}">{{ account.p_account_name }}</a></td>
+						<td><a class="btn btn-outline-info btn-sm btn-block text-left" href="{% url 'account_transactions' item_id=item.id account_id=account.id %}">{{ account.p_account_name }}</a></td>
 						<td>{{ account.p_account_official_name|default_if_none:"-"|truncatechars:20 }}</td>
 						<td>{{ account.p_account_subtype|title }}</td>
 						<td>$ {{ account.p_account_balance_current|floatformat:2|intcomma }}</td>
@@ -42,5 +42,4 @@
 	</div>
 	<br/><br/>
 </div>
-
 {% endblock content %}
