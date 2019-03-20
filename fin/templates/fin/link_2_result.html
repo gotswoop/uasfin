@@ -1,0 +1,85 @@
+{% extends 'fin/base.html' %}
+{% block content %}
+{% load humanize %}
+</style>
+<div id="intro">
+	<div class="row">
+		<div class="col-md-8">
+			<div class="card mb-3">
+				<div class="card-body">
+					{% if recent_action.error_code == None %}
+			  		
+			  			<h4 id="success_summary" class="card-title text-success"><strong>{{ recent_action.institution_name }}</strong> was successfully linked to UASFin!</h4>
+			  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
+
+			  		{% elif recent_action.error_code == "DUPLICATE_INSTITUTION_PREVIOUSLY_DELETED" %}
+
+		  				<h4 id="failure_summary" class="card-title text-danger"><strong> {{ recent_action.institution_name }} </strong> was previously linked and removed</h4>
+		  				<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Would%20like%20to%20re-link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you would like to re-link <strong>{{ recent_action.institution_name }}</strong>.</p>
+	  					<p class="card-text pt-2">Would you like to link a different institution?<br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
+
+			  		{% elif recent_action.error_code == "DUPLICATE_INSTITUTION" %}
+			  			
+			  			<h4 id="failure_summary" class="card-title text-danger"><strong> {{ recent_action.institution_name }} </strong> was previously linked</h4>
+	  					<p class="card-text pt-2">Would you like to link a different institution?<br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
+
+			  		{% elif recent_action.error_code == "USER_EXITED_PLAID_LINK" %}
+			  			
+			  			<h4 id="failure_summary" class="card-title text-info"><strong>You quit the account linking process</strong></h4>
+	  					<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Unable%20to%20link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you are experiencing issues with finding or linking your institution.</p>
+	  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month.<br/><br/>Would like to try again?</p>
+
+			  		{% elif recent_action.error_code == "INVALID_CREDENTIALS" %}
+			  			
+			  			<h4 id="failure_summary" class="card-title text-danger">The credentials for your <strong>{{ recent_action.institution_name }}</strong> account were incorrect</h4>
+	  					<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Unable%20to%20link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you are experiencing issues linking your <strong>{{ recent_action.institution_name }}</strong> account.</p>
+	  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month.<br/><br/>Would like to try linking <strong>{{ recent_action.institution_name }}</strong> again?</p>
+
+			  		{% endif %}
+			  	</div>
+			</div>
+			<p>
+				{% if recent_action.error_code == "USER_EXITED_PLAID_LINK" or recent_action.error_code == "INVALID_CREDENTIALS" %}
+					<a class="btn btn-lg btn-primary" href="{% url 'link_account' %}" role="button">Link Account</a>
+				{% else %}
+					<a class="btn btn-lg btn-primary" href="{% url 'link_account' %}" role="button">Link Another Account</a>
+				{% endif %}
+				{% if first_timer and items %}
+					<a class="link-btn-no btn btn-lg btn-outline-info ml-3" href="{% url 'link_account_summary' %}" role="button">No</a>
+				{% else %}
+					<a class="link-btn-no btn btn-lg btn-outline-info ml-3" href="{% url 'home' %}" role="button">No</a>
+				{% endif %}
+			</p>
+			<br/><br/>
+		</div>
+		<div class="col-md-4">
+			<div class="card">
+				<div class="card-header bg-success text-white">
+					<h6>Number of Institutions Linked: {{ items }}</h6>
+					<h6>Monthly Rewards Earnings: ${% widthratio 5 1 items %}</h6></div>
+			 </div>
+			<div class="card mt-2">
+			  <div class="card-body border border-success">
+			    <p class="card-text">
+			    	These are the accounts often linked by other survey participants. Please take a look at this list:
+					<ul>
+					<li>Checking Accounts</li>
+					<li>Savings Accounts</li>
+					<li>Credit Card Accounts</li>
+					<li>Pre-paid Credit Card</li>
+					<li>Money Market Accounts</li>
+					<li>CD's</li>
+					<li>Mortgages</li>
+					<li>Home Equity Line of Credit (HELOC)</li>
+					<li>Employer-sponsored retirement accounts (401k, 403(b), and similar)</li> 
+					<li>Investment Retirement Accounts (IRA)</li>
+					<li>Brokerage Accounts</li>
+					</ul>
+					Think about all the accounts you have linked. Do you have accounts in other financial institutions you may have forgotten and would like to link?
+				</p>
+			  </div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock content %}

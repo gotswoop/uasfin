@@ -23,6 +23,11 @@ def register(request):
 
 @login_required
 def profile(request):
+    
+    staff = False
+    if request.user.groups.filter(name='cesr_team').exists():
+    	staff = True
+    	
     try:
         user_institutions = Items.objects.filter(user_id = request.user).order_by('p_item_name')
     except Items.DoesNotExist:
@@ -30,6 +35,7 @@ def profile(request):
         
     context = {
 	    'title': "Profile",
+        'staff': staff,
         'accounts': user_institutions,
     }
     

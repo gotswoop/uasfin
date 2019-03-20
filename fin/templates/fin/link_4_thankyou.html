@@ -1,0 +1,26 @@
+{% extends 'fin/base.html' %}
+{% block content %}
+<div id="thank_you">
+	<div class="card border mb-3">
+	  <div class="card-body">
+	  	<h4 class="card-title">Thank you for linking your financial institutions!</h4>
+	    <p class="card-text">
+	    	As a reminder, please be assured that we DO NOT have access to your credentials or any other identifying information.
+	    	<br/> 
+			Your financial information will be kept secure and protected. Plaid will never share your login IDs, passwords, or any other personal information with UAS researchers or anyone else.
+			<br/><br/>
+			You will be able to add financial institutions at any time in case you forget some or in case you establish relationships with new ones.
+			<br/><br/>
+			You will be able to unlink your financial institutions at any time if you wish to do so.
+			<br/><br/>
+			You can also unlink specific accounts within a financial institution. If you wish to do so, please let us know.
+			<br/><br/>
+			Now that you have linked your institutions, no further action is required and you will keep earning your monthly rewards. However, we may periodically ask you to refresh the links with your financial institutions if something changes. This will ensure that you will keep receiving your monthly rewards.
+		</p>
+	  </div>
+	</div>
+	<p>
+		<a class="btn btn-lg btn-outline-info ml-3" href="{% url 'home' %}" role="button">Go to dashboard</a>
+	</p>
+</div>
+{% endblock content %}

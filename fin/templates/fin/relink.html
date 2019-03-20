@@ -1,0 +1,80 @@
+{% extends 'fin/base.html' %}
+{% block content %}
+
+<div class="test"><p>DEBUG: Linking.....</p></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script>
+	
+	(function($) {
+    	$.ajaxSetup({ 
+			// TODO: CSRF Token???
+			data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+		});
+
+		$(document)
+		.ajaxStart(function () {
+			$('.test').show();
+		})
+		.ajaxStop(function () {
+			$('.test').hide();
+		});
+
+		var products = '{{ plaid_products }}'.split(',');
+    
+		var handler = Plaid.create({
+			apiVersion: 'v2',
+			clientName: 'UASFin',
+			env: '{{ plaid_environment }}',
+			product: products,
+			key: '{{ plaid_public_key }}',
+			webhook: '{{ plaid_webhook_url }}',
+			token: '{{ public_token }}',
+			onSuccess: function(public_token, metadata) {
+				window.console.log('** onSuccess **')
+				window.console.log(public_token)
+				window.console.log(metadata)
+				/*
+				$.post("{% url 'plaid_link_onSuccess' %}", {
+					public_token: public_token,
+					metadata: JSON.stringify(metadata),
+				}, function(data) {
+					window.location.replace("{% url 'link_account_result' %}");
+				});
+				*/
+			},
+			onLoad: function() {
+				// Triggering Plaid Link on page load
+				window.console.log('** onLoad **')
+				handler.open();
+			},
+			onExit: function(err, metadata) {
+				window.console.log('** onExit **')
+				window.console.log(err)
+				window.console.log(metadata);
+				$.post("{% url 'plaid_link_onExit' %}", {
+                    // TODO : record this in user action
+                    // TODO: update fin_items set active = 1 
+					error: JSON.stringify(err),
+					metadata: JSON.stringify(metadata),
+				}, function(data) {
+					// redirect to a relink/result page
+					// window.location.replace("{% url 'link_account_result' %}");
+					window.location.replace("{% url 'home' %}");
+        		});
+        	},
+			onEvent: function(eventName, metadata) {
+				window.console.log('** onEvent **')
+				window.console.log(eventName);
+				window.console.log(metadata);
+				$.post("{% url 'plaid_link_onEvent' %}", {
+					eventName: eventName,
+					metadata: JSON.stringify(metadata),
+				});
+			}
+    	});
+    })(jQuery);
+
+</script>
+{% endblock content %}
