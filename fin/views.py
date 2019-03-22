@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 def plaid_link_onEvent(request):
     eventName = request.POST.get('eventName', '')
     metadata = request.POST.get('metadata', '')
+    # TODO: json loads will fail if metadata is empty
     metadata = json.loads(metadata)
     
     new_plaid_link_log = Plaid_Link_Logs.objects.create(
@@ -253,6 +254,7 @@ def plaid_link_onSuccess(request):
 	global access_token  ## TODO: YIKES
 	public_token = request.POST.get('public_token', '')
 	metadata = request.POST.get('metadata', '')
+	# TODO: This will fail if metadata is blank
 	metadata = json.loads(metadata)
 
 	try:
@@ -371,7 +373,7 @@ def plaid_link_onSuccess(request):
 @csrf_exempt
 def webhook(request):
 	incoming = {}
-	incoming = json.loads(request.body) 
+	incoming = json.loads(request.body)
 	# TODO: Handle Special chars??
 	# incoming = json.loads(request.body.decode('UTF-8')) # decode needed for python < 3.6
 
