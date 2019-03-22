@@ -1,10 +1,12 @@
-import json
+import ast
 from django.db import models
 from django.contrib.auth.models import User
-from django_mysql.models import JSONField
+# from django_mysql.models import JSONField
 
+'''
 def my_default():
     return {'foo': 'bar'}
+'''
 
 class Fin_Items(models.Model):
 	user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.PROTECT)
@@ -61,7 +63,7 @@ class Fin_Transactions(models.Model):
 	p_location_state = models.CharField(max_length=100, null=True)
 	p_location_store_number  = models.CharField(max_length=100, null=True)
 	p_location_zip = models.CharField(max_length=50, null=True)
-	p_name = models.CharField(max_length=250, null=True)
+	p_name = models.TextField(null=True)
 	p_payment_meta_by_order_of = models.CharField(max_length=250, null=True)
 	p_payment_meta_payee = models.CharField(max_length=250, null=True)
 	p_payment_meta_payer = models.CharField(max_length=250, null=True)
@@ -84,8 +86,10 @@ class Fin_Transactions(models.Model):
 		db_table = "fin_transactions"
 
 	def get_category(self):
+		if self.p_category is None:
+			return None
 		a=''
-		for x in json.loads(self.p_category):
+		for x in ast.literal_eval(self.p_category):
 			a += x + ' / '
 		return a.rstrip(' / ')
 
@@ -136,12 +140,26 @@ class Plaid_Webhook_Logs(models.Model):
 	p_webhook_type = models.CharField(max_length=100, null=True)
 	p_webhook_code = models.CharField(max_length=100, null=True)
 	p_item_id = models.CharField(max_length=250, null=True)
-	p_error = JSONField(default=my_default, null=True)
+	p_error = models.TextField(null=True)
 	p_new_transactions = models.IntegerField(null=True)
 	p_removed_transactions = models.TextField(null=True)
-	p_raw_payload = JSONField(default=my_default, null=True)
+	p_raw_payload = models.TextField(null=True)
 	processed = models.IntegerField(default=0)
 	date_created = models.DateTimeField(auto_now_add=True)
 
 	class Meta:
 		db_table = "plaid_webhook_logs"
+
+'''
+log to plaid_api_logs
+- [ ] id
+- [ ] user_id ??????
+- [ ] triggered_by_user_id
+- [ ] event_timestamp
+- [ ] success
+- [ ] api_call
+- [ ] api_parameters
+- [ ] p_api_response
+- [ ] success - 0/1
+- [ ] p_api_request_id
+'''

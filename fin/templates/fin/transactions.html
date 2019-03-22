@@ -40,7 +40,7 @@
 							<td>{{ cnt }}</td>
 							<td>{{ transaction.p_date|date:"Y-m-d" }}</td>
 							<td>{{ transaction.p_name }}</td>
-							<td>{{ transaction.get_category }}</td>
+							<td>{{ transaction.get_category|default_if_none:"-" }}</td>
 							<td>$ {{ transaction.p_amount|floatformat:2|intcomma }}</td>
 						</tr>
 						{% endwith %}

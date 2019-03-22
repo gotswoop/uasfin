@@ -34,7 +34,6 @@ def fetch_transactions_from_plaid(client, item, logger):
 	except plaid.errors.PlaidError as e:
 		return format_error(e)
   
-
 	# pretty_print_response(transactions_response)
 	# Update account information here. (just once)
 	for account in transactions_response['accounts']:
@@ -48,7 +47,6 @@ def fetch_transactions_from_plaid(client, item, logger):
 		fin_account.p_balances_limit = account.get('balances').get('limit')
 		fin_account.account_refresh_date = datetime.now()
 		fin_account.save(update_fields=['p_balances_available','p_balances_current','p_balances_limit','account_refresh_date'])
-
 
 	for transaction in transactions_response['transactions']:
 		
@@ -129,7 +127,7 @@ def log_incoming_webhook(incoming, remote_ip):
 		p_error = incoming.get('error'),
 		p_new_transactions = incoming.get('new_transactions'),
 		p_removed_transactions = incoming.get('removed_transactions'),
-		p_raw_payload = incoming
+		p_raw_payload = json.dumps(incoming)
 	)
 
 	return None
@@ -140,7 +138,7 @@ def insert_transaction(fin_accounts_obj, transaction):
 		item_accounts_id = fin_accounts_obj,
 		p_account_owner = transaction['account_owner'],
 		p_amount = transaction['amount'],
-		p_category = json.dumps(transaction['category']),
+		p_category = transaction['category'],
 		p_category_id = transaction['category_id'],
 		p_date = transaction['date'],
 		p_iso_currency_code = transaction['iso_currency_code'],
