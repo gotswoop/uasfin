@@ -120,7 +120,7 @@ class Plaid_Link_Logs(models.Model):
 	p_exit_status = models.CharField(max_length=250, null=True)
 	p_institution_id = models.CharField(max_length=250, null=True)
 	p_institution_name = models.CharField(max_length=250, null=True)
-	p_institution_search_query = models.textField(null=True)
+	p_institution_search_query = models.TextField(null=True)
 	p_link_session_id = models.CharField(max_length=250, null=True)
 	p_mfa_type = models.CharField(max_length=100, null=True)
 	p_request_id = models.CharField(max_length=250, null=True)
