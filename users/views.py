@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm
 from django.shortcuts import redirect
-from fin.models import Items, Item_accounts, Item_account_transactions
+from fin.models import Fin_Items
 from django.http import HttpResponse
 
 def register(request):
@@ -29,8 +29,8 @@ def profile(request):
     	staff = True
     	
     try:
-        user_institutions = Items.objects.filter(user_id = request.user).order_by('p_item_name')
-    except Items.DoesNotExist:
+        user_institutions = Fin_Items.objects.filter(user_id = request.user).order_by('p_item_name')
+    except Fin_Items.DoesNotExist:
         user_institutions = None
         
     context = {

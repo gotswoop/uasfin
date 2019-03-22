@@ -1,6 +1,6 @@
 #import base64
 #import os
-import datetime
+from datetime import datetime
 import plaid
 import json
 #import time
@@ -12,14 +12,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from .models import Items, Item_accounts, Item_account_transactions, Plaid_Link_Logs, User_Actions, Users_With_Atleast_One_Linked_Institution, Plaid_Webhook_Logs
-from .functions import pretty_print_response, fetch_transactions_from_plaid, format_error
+from .models import Fin_Items, Fin_Accounts, Fin_Transactions, Plaid_Link_Logs, Plaid_Webhook_Logs, User_Actions, Users_With_Linked_Institutions
+from .functions import pretty_print_response, fetch_transactions_from_plaid, log_incoming_webhook, insert_transaction, format_error
 from django.conf import settings
 from django.contrib import messages
 import logging
 from django.core import serializers
-from django.utils import timezone
-import pytz
 
 access_token = None
 client = plaid.Client(client_id=settings.PLAID_CLIENT_ID, secret=settings.PLAID_SECRET, public_key=settings.PLAID_PUBLIC_KEY, environment=settings.PLAID_ENV, api_version='2018-05-22')
@@ -121,8 +119,8 @@ def link_account(request):
 def relink_account(request, item_id):
 
     try:
-        item = Items.objects.exclude(deleted = 1).get(id = item_id, user_id = request.user)
-    except Items.DoesNotExist:
+        item = Fin_Items.objects.exclude(deleted = 1).get(id = item_id, user_id = request.user)
+    except Fin_Items.DoesNotExist:
        	messages.warning(request, format('Invalid Operation.'))
         return redirect('home')
 
@@ -158,12 +156,12 @@ def link_account_result(request):
     referer_url = request.META.get('HTTP_REFERER')
     check_url = ('https://' if request.is_secure() else 'http://') + request.get_host() + '/link/'
     
-    number_of_items = Items.objects.filter(user_id = request.user).exclude(deleted = 1).count()
+    number_of_items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count()
     
     recent_action = User_Actions.objects.filter(user_id = request.user, action__in=["link_item", "link_exit"]).order_by('-date_created').first()
     
     first_timer = 1
-    if Users_With_Atleast_One_Linked_Institution.objects.filter(user_id = request.user).count():
+    if Users_With_Linked_Institutions.objects.filter(user_id = request.user).count():
     	first_timer = 0
 
     # Redirect to dashboard if there are no items OR there were no recent actions.
@@ -214,8 +212,8 @@ def link_account_thankyou(request):
         messages.warning(request, format('Invalid Operation.'))
         return redirect('home')
     
-    if Items.objects.filter(user_id = request.user).exclude(deleted = 1).count():
-        updated_item, new_item = Users_With_Atleast_One_Linked_Institution.objects.update_or_create(user_id = request.user, defaults={'user_id': request.user})
+    if Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count():
+        updated_item, new_item = Users_With_Linked_Institutions.objects.update_or_create(user_id = request.user, defaults={'user_id': request.user})
     
     context = {'title': 'Link Account - Thank You'}
     return render(request, 'fin/link_4_thankyou.html')
@@ -226,7 +224,7 @@ def link_account_thankyou(request):
 @login_required()
 def home(request):
 
-	items = Items.objects.filter(user_id = request.user).exclude(deleted = 1).order_by('p_item_name')
+	items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).order_by('p_item_name')
   
 	context = {
 		'title': "Dashboard",
@@ -277,8 +275,8 @@ def plaid_link_onSuccess(request):
 	logger.debug('New item 3 of 4: ' + json.dumps(institution_response))
 
 	try:
-		already_exists = Items.objects.get(user_id = request.user, p_institution_id = item_response['item']['institution_id'])
-	except Items.DoesNotExist:
+		already_exists = Fin_Items.objects.get(user_id = request.user, p_institution_id = item_response['item']['institution_id'])
+	except Fin_Items.DoesNotExist:
 		already_exists = None
 
 	if already_exists:
@@ -308,7 +306,7 @@ def plaid_link_onSuccess(request):
 	else:
 		# Add record
 		# TODO: try and catch this??
-		new_item = Items.objects.create(
+		new_item = Fin_Items.objects.create(
 			user_id = request.user, 
 			p_access_token = access_token, 
 			p_item_id = exchange_response['item_id'], 
@@ -331,7 +329,7 @@ def plaid_link_onSuccess(request):
 		try:
 			accounts_response = client.Accounts.get(access_token)
 		except plaid.errors.PlaidError as e:
-			return jsonify({'error': {'display_message': e.display_message, 'error_code': e.code, 'error_type': e.type } })
+			return JsonResponse(format(e))
   
 		logger.debug('New accounts (raw): ' + json.dumps(accounts_response))
 
@@ -342,19 +340,19 @@ def plaid_link_onSuccess(request):
 				accounts = accounts_response['accounts']
 				cnt = 1
 				for account in accounts:
-					new_account = Item_accounts.objects.create(
+					new_account = Fin_Accounts.objects.create(
 						items_id = new_item,
-						p_account_id = account['account_id'],
-						p_account_balance_available = account['balances']['available'],
-						p_account_balance_current = account['balances']['current'],
-						p_account_balance_iso_currency_code = account['balances']['iso_currency_code'],
-						p_account_balance_limit = account['balances']['limit'],
-						p_account_balance_unofficial_currency_code = account['balances']['unofficial_currency_code'],
-						p_account_mask = account['mask'],
-						p_account_name = account['name'],
-						p_account_official_name = account['official_name'],
-						p_account_subtype = account['subtype'],
-						p_account_type = account['type']
+						p_account_id = account.get('account_id'),
+						p_balances_available = account.get('balances').get('available'),
+						p_balances_current = account.get('balances').get('current'),
+						p_balances_iso_currency_code = account.get('balances').get('iso_currency_code'),
+						p_balances_limit = account.get('balances').get('limit'),
+						p_balances_unofficial_currency_code = account.get('balances').get('unofficial_currency_code'),
+						p_mask = account.get('mask'),
+						p_name = account.get('name'),
+						p_official_name = account.get('official_name'),
+						p_subtype = account.get('subtype'),
+						p_type = account.get('type')
 					)
 				logger.debug('New account ' + str(cnt) + ' (INSERTED): ' +  serializers.serialize('json', [new_account]))
 				cnt = cnt + 1
@@ -377,42 +375,55 @@ def webhook(request):
 	# TODO: Handle Special chars??
 	# incoming = json.loads(request.body.decode('UTF-8')) # decode needed for python < 3.6
 
+	# Logging incoming webhook into database
+	log_incoming_webhook(incoming, request.META.get('REMOTE_ADDR'))
+	
 	webhook_type = incoming.get('webhook_type')
 	webhook_code = incoming.get('webhook_code')
 
 	# TODO: Only handling webhook_type of TRANSCTIONS and ITEM
 	if webhook_type not in ["TRANSACTIONS", "ITEM"]:
-		logger.debug('# WARN - Webhook. Type not yet handled. ' + json.dumps(incoming))
+		logger.debug('# TODO - Webhook. Type not yet handled. ' + webhook_type)
 		return HttpResponse('')
-
-	try:
-		item_id = incoming.get('item_id')
-		res = Items.objects.values('p_access_token').exclude(deleted = 1).get(p_item_id = item_id)
-		access_token = res.get('p_access_token')
-	except Items.DoesNotExist:
+	
+	# There won't be an item_id for other type of webhooks
+	item_id = incoming.get('item_id')
+	
+	try:	
+		item = Fin_Items.objects.exclude(deleted = 1).get(p_item_id = item_id)
+	except Fin_Items.DoesNotExist:
 		logger.debug('# WARN - Webhook. No corresponding item_id in fin_items table. ' + json.dumps(incoming))
 		return HttpResponse('')
 	
-	# Logging incoming webhook into database
-	log_imcoming_webhook(incoming, request.META.get('REMOTE_ADDR'))
-	
 	# TODO: Check other webhook_types and only if ERROR is NONE
 	if webhook_type == "TRANSACTIONS":
+
 		if webhook_code in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "DEFAULT_UPDATE"]:
-			logger.debug('Getting transactions for item_id = ' + item_id)
-			fetch_transactions_from_plaid(access_token)
+			response = fetch_transactions_from_plaid(client, item, logger)
 		elif webhook_code == "TRANSACTIONS_REMOVED":                
-			# remove_transactions()
+			
 			logger.debug('Rare remove transactions for item_id = ' + item_id)
 		else:
-			logger.debug('*** Should not be in here. item_id = ' + item_id)
+			# TODO: Throw error and log it.
+			logger.debug('# ERROR - Webook. Should not be in here. ' + webhook_code + ' - ' + item_id)
+
+		# Setting the item_refresh_date to now
+		if response == None:
+			item.item_refresh_date = datetime.now()
+			item.save(update_fields=['item_refresh_date'])
+		else:
+			# Log error and do nothing.
+			# return JsonResponse(response)	
+			logger.debug('# ERROR - Webook. Issues with fetching / inserting transactions. ' + item_id  + ' - ' + response)
+
 	elif webhook_type == "ITEM":
 		if webhook_code == "ERROR":
-			logger.debug('Time to update credentials for ' + item_id)
+			logger.debug('# TODO - Webhook. Time to update credentials for ' + item_id)
 			# Set fin_items.active = 0
 		elif webhook_code == "WEBHOOK_UPDATE_ACKNOWLEDGED":                
 			# DO NOTHING FOR NOW
 			logger.debug('Webhook update acknowleded' + item_id)
+			logger.debug('# TODO - Webhook. Webook update acknowleded ' + item_id)
 
 	return HttpResponse('')
 
@@ -423,56 +434,43 @@ def webhook(request):
 @login_required()
 def account_details(request, item_id):
 	
-    try:
-        # TODO: Limit 60 days of transactions
-        accounts = Item_accounts.objects.filter(items_id = item_id, items_id__user_id=request.user).exclude(items_id__deleted=1).order_by('p_account_name')
-    except Item_accounts.DoesNotExist:
-        accounts = None
+	# Checking if viewing user is owner of the account -> item_id
+	try:
+		item = Fin_Items.objects.exclude(deleted = 1).get(id = item_id)
+	except Fin_Items.DoesNotExist:
+		messages.warning(request, format('Invalid operation. ! Authorized.'))
+		return redirect('home')
 
-    if accounts:
-    	# getting account information
-        try:
-            item = Items.objects.exclude(deleted = 1).get(id = item_id)
-        except Items.DoesNotExist:
-        	item = None
-
-        context = {
-            'accounts': accounts,
-            'item': item
-        }
-        return render(request, 'fin/account.html', context)
-    else:
-        messages.warning(request, format('Invalid operation.'))
-        return redirect('home')
+	accounts = Fin_Accounts.objects.filter(items_id = item_id, items_id__user_id=request.user).exclude(items_id__deleted=1).order_by('p_name')
+	
+	context = {
+		'item': item,
+		'accounts': accounts
+		}
+	return render(request, 'fin/account.html', context)     
 
 # ------------------------------------------------------------------
 # Transactions detail page for a specific account
 # ------------------------------------------------------------------
 @login_required()
 def account_transactions(request, item_id, account_id):
-	
-    try:
-        # TODO: Limit 60 days of transactions
-        transactions = Item_account_transactions.objects.filter(item_accounts_id = account_id, item_accounts_id__items_id__user_id=request.user).exclude(item_accounts_id__items_id__deleted=1).order_by('-p_date')[:600]
-    except Item_account_transactions.DoesNotExist:
-        transactions = None
 
-    if transactions:
-    	# getting account information
-        try:
-            account_info = Item_accounts.objects.get(id = account_id)
-        except Item_accounts.DoesNotExist:
-        	account_info = None
+	# Checking if viewing user is owner of the account -> item_id	
+	try:
+		# account_info = Fin_Accounts.objects.get(id = account_id)
+		account_info = Fin_Accounts.objects.exclude(items_id__deleted=1).get(id = account_id, items_id__user_id=request.user, items_id = item_id)
+	except Fin_Accounts.DoesNotExist:
+		messages.warning(request, format('Invalid operation. ! Authorized.'))
+		return redirect('home')
 
-        context = {
-            'account': account_info,
-            'transactions': transactions
-        }
-        return render(request, 'fin/transactions.html', context)
-    else:
-        messages.warning(request, format('Account refresh pending. Please check back again.'))
-        url = '/details/' + str(item_id)
-        return redirect(url)
+	# TODO: Limit 60 days of transactions
+	transactions = Fin_Transactions.objects.filter(item_accounts_id = account_id, item_accounts_id__items_id__user_id=request.user).exclude(item_accounts_id__items_id__deleted=1).order_by('-p_date')[:600]
+
+	context = {
+		'account': account_info,
+		'transactions': transactions
+	}
+	return render(request, 'fin/transactions.html', context)
 
 
 # ------------------------------------------------------------------
@@ -488,8 +486,8 @@ def unlink_account(request, item_id):
     
 	try:
 		# Checking if user deleting is the owner
-		item = Items.objects.exclude(deleted = 1).get(id = item_id, user_id = request.user)
-	except Items.DoesNotExist:
+		item = Fin_Items.objects.exclude(deleted = 1).get(id = item_id, user_id = request.user)
+	except Fin_Items.DoesNotExist:
 		item = None
         
 	if not item:
@@ -506,7 +504,7 @@ def unlink_account(request, item_id):
 	if response['removed'] == True:
 		item.p_access_token = None # Setting access_token to null
 		item.deleted = 1
-		item.deleted_date = timezone.now()
+		item.deleted_date = datetime.now()
 		item.save(update_fields=['p_access_token','deleted','deleted_date'])
 		# Updating actions table.
 		new_action = User_Actions.objects.create(
@@ -522,8 +520,8 @@ def unlink_account(request, item_id):
 		return redirect('profile')
     
 	# reset table 
-	if not Items.objects.filter(user_id = request.user).exclude(deleted = 1).count():
-		Users_With_Atleast_One_Linked_Institution.objects.filter(user_id = request.user).delete()
+	if not Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count():
+		Users_With_Linked_Institutions.objects.filter(user_id = request.user).delete()
 
 	messages.success(request, format(item.p_item_name + ' Removed.'))
 	return redirect('profile')

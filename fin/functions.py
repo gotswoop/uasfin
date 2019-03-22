@@ -1,12 +1,12 @@
 #import base64
 #import os
-import datetime
+from datetime import datetime, timedelta
 import plaid
 import json
 #import time
 
 from django.shortcuts import render
-from .models import Items, Item_accounts, Item_account_transactions, Plaid_Link_Logs, User_Actions, Users_With_Atleast_One_Linked_Institution, Plaid_Webhook_Logs
+from .models import Fin_Items, Fin_Accounts, Fin_Transactions, Plaid_Link_Logs, Plaid_Webhook_Logs, User_Actions, Users_With_Linked_Institutions
 from django.conf import settings
 from django.contrib import messages
 import logging
@@ -21,43 +21,108 @@ def pretty_print_response(response):
 # ------------------------------------------------------------------
 # Get Transactions for an item
 # ------------------------------------------------------------------
-def fetch_transactions_from_plaid(access_token):
+def fetch_transactions_from_plaid(client, item, logger):
   
-	# Pull transactions for the last 1095 days (3 years)
-	start_date = '{:%Y-%m-%d}'.format(datetime.datetime.now() + datetime.timedelta(-730))
-	end_date = '{:%Y-%m-%d}'.format(datetime.datetime.now())
-
+	# Pull transactions for the last 1460 days (4 years)
+	start_date = '{:%Y-%m-%d}'.format(datetime.now() + timedelta(days=-1460))
+	end_date = '{:%Y-%m-%d}'.format(datetime.now())
+	count = 300
+	offset = 0
+	
 	try:
-		transactions_response = client.Transactions.get(access_token, start_date, end_date)
+		transactions_response = client.Transactions.get(item.p_access_token, start_date, end_date, {'count':count, 'offset':offset})
 	except plaid.errors.PlaidError as e:
-		return jsonify(format_error(e))
+		return format_error(e)
   
+
+	# pretty_print_response(transactions_response)
+	# Update account information here. (just once)
+	for account in transactions_response['accounts']:
+		try:
+			fin_account = Fin_Accounts.objects.get(p_account_id = account.get('account_id'), items_id = item)
+		except Fin_Accounts.DoesNotExist:
+			print ("IN MEAW")
+
+		fin_account.p_balances_available = account.get('balances').get('available')
+		fin_account.p_balances_current = account.get('balances').get('current')
+		fin_account.p_balances_limit = account.get('balances').get('limit')
+		fin_account.account_refresh_date = datetime.now()
+		fin_account.save(update_fields=['p_balances_available','p_balances_current','p_balances_limit','account_refresh_date'])
+
+
 	for transaction in transactions_response['transactions']:
+		
 		account_id = transaction['account_id']
-		item_account_obj = Item_accounts.objects.get(p_account_id = account_id)
-		if item_account_obj:
+		try:
+			fin_accounts_obj = Fin_Accounts.objects.get(p_account_id = account_id)
+		except Fin_Accounts.DoesNotExist:
+			fin_accounts_obj = None
+
+		if fin_accounts_obj:
 			try:
-				already_exists = Item_account_transactions.objects.get(p_transaction_id = transaction['transaction_id'], item_accounts_id = item_account_obj)
-			except Item_account_transactions.DoesNotExist:
+				# TOO EXPENSIVE
+				already_exists = Fin_Transactions.objects.get(p_transaction_id = transaction['transaction_id'], item_accounts_id = fin_accounts_obj)
+			except Fin_Transactions.DoesNotExist:
 				already_exists = None
 
 			if already_exists:
-				# Skip to next transaction
 				continue
 
-			insert_transaction(item_account_obj, transaction)
+			# TODO: What about updates?
+			new_transaction = insert_transaction(fin_accounts_obj, transaction)
 			# logger.debug('TRANSACTIONS ADDED: ' + serializers.serialize('json', [new_transaction]))
 			logger.debug('TRANSACTIONS ADDED: ' + new_transaction.p_transaction_id)
 
 		else:
 			logger.debug('ERROR: Cannot find the account that we are trying to add or update transactions into')
 
+
+	remaining_transactions = transactions_response['total_transactions'] - count
+
+	while remaining_transactions > 0:
+		offset = offset + count - 1
+		print("REMAINING / count / offset : " + str(remaining_transactions) + '/' + str(count) + '/' + str(offset))
+
+		try:
+			transactions_response = client.Transactions.get(item.p_access_token, start_date, end_date, {'count':count, 'offset':offset})
+		except plaid.errors.PlaidError as e:
+			return format_error(e)
+  		
+		for transaction in transactions_response['transactions']:
+		
+			account_id = transaction['account_id']
+			try:
+				fin_accounts_obj = Fin_Accounts.objects.get(p_account_id = account_id)
+			except Fin_Accounts.DoesNotExist:
+				fin_accounts_obj = None
+
+			if fin_accounts_obj:
+				try:
+					# TOO EXPENSIVE
+					already_exists = Fin_Transactions.objects.get(p_transaction_id = transaction['transaction_id'], item_accounts_id = fin_accounts_obj)
+				except Fin_Transactions.DoesNotExist:
+					already_exists = None
+
+				if already_exists:
+					continue
+
+				# TODO: What about updates?
+				new_transaction = insert_transaction(fin_accounts_obj, transaction)
+				# logger.debug('TRANSACTIONS ADDED: ' + serializers.serialize('json', [new_transaction]))
+				logger.debug('TRANSACTIONS ADDED: ' + new_transaction.p_transaction_id)
+
+			else:
+				logger.debug('ERROR: Cannot find the account that we are trying to add or update transactions into')
+
+		remaining_transactions = remaining_transactions - count
+		
 	return None
 
-def log_imcoming_webhook(incoming, remote_ip):
+def log_incoming_webhook(incoming, remote_ip):
 
+	# TODO: error handling
 	new_plaid_webhook_log = Plaid_Webhook_Logs.objects.create(
-		remote_ip = request.META.get('REMOTE_ADDR'),
+		remote_ip = remote_ip,
 		p_webhook_type = incoming.get('webhook_type'),
 		p_webhook_code = incoming.get('webhook_code'),
 		p_item_id  = incoming.get('item_id'),
@@ -69,11 +134,10 @@ def log_imcoming_webhook(incoming, remote_ip):
 
 	return None
 
-def insert_transaction(item_account_obj, transaction):
+def insert_transaction(fin_accounts_obj, transaction):
 
-	new_transaction = Item_account_transactions.objects.create(
-		item_accounts_id = item_account_obj,
-		p_account_id = transaction['account_id'],
+	new_transaction = Fin_Transactions.objects.create(
+		item_accounts_id = fin_accounts_obj,
 		p_account_owner = transaction['account_owner'],
 		p_amount = transaction['amount'],
 		p_category = json.dumps(transaction['category']),
@@ -103,7 +167,7 @@ def insert_transaction(item_account_obj, transaction):
 		p_unofficial_currency_code = transaction['unofficial_currency_code']
 	)
 
-	return None
+	return new_transaction
 # ------------------------------------------------------------------
 # Remove item (TESTING ONLY)
 # ------------------------------------------------------------------
