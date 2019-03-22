@@ -434,14 +434,24 @@ def webhook(request):
 @login_required()
 def account_details(request, item_id):
 	
-	# Checking if viewing user is owner of the account -> item_id
-	try:
-		item = Fin_Items.objects.exclude(deleted = 1).get(id = item_id)
-	except Fin_Items.DoesNotExist:
-		messages.warning(request, format('Invalid operation. ! Authorized.'))
-		return redirect('home')
+	# TODO Remove this.
+	if request.user.is_superuser:
+		try:
+			item = Fin_Items.objects.exclude(deleted = 1).get(id = item_id)
+		except Fin_Items.DoesNotExist:
+			messages.warning(request, format('Invalid operation. ! Exists.'))
+			return redirect('home')
+	else:
+		# Checking if viewing user is owner of the account -> item_id
+		try:
+			item = Fin_Items.objects.exclude(deleted = 1).get(id = item_id, user_id = request.user)
+		except Fin_Items.DoesNotExist:
+			# messages.warning(request, format('Invalid operation. ! Authorized.'))
+			return redirect('home')
 
-	accounts = Fin_Accounts.objects.filter(items_id = item_id, items_id__user_id=request.user).exclude(items_id__deleted=1).order_by('p_name')
+	# Maybe no need to check this as already verifying above?
+	# accounts = Fin_Accounts.objects.filter(items_id = item_id, items_id__user_id=request.user).exclude(items_id__deleted=1).order_by('p_name')
+	accounts = Fin_Accounts.objects.filter(items_id = item_id).exclude(items_id__deleted=1).order_by('p_name')
 	
 	context = {
 		'item': item,
@@ -455,16 +465,28 @@ def account_details(request, item_id):
 @login_required()
 def account_transactions(request, item_id, account_id):
 
-	# Checking if viewing user is owner of the account -> item_id	
-	try:
-		# account_info = Fin_Accounts.objects.get(id = account_id)
-		account_info = Fin_Accounts.objects.exclude(items_id__deleted=1).get(id = account_id, items_id__user_id=request.user, items_id = item_id)
-	except Fin_Accounts.DoesNotExist:
-		messages.warning(request, format('Invalid operation. ! Authorized.'))
-		return redirect('home')
+	# TODO Remove this.
+	if request.user.is_superuser:
+		try:
+			# account_info = Fin_Accounts.objects.get(id = account_id)
+			account_info = Fin_Accounts.objects.exclude(items_id__deleted=1).get(id = account_id, items_id = item_id)
+		except Fin_Accounts.DoesNotExist:
+			messages.warning(request, format('Invalid operation. ! Exists.'))
+			return redirect('home')
+
+	else:
+		# Checking if viewing user is owner of the account -> item_id	
+		try:
+			# account_info = Fin_Accounts.objects.get(id = account_id)
+			account_info = Fin_Accounts.objects.exclude(items_id__deleted=1).get(id = account_id, items_id__user_id=request.user, items_id = item_id)
+		except Fin_Accounts.DoesNotExist:
+			# messages.warning(request, format('Invalid operation. ! Authorized.'))
+			return redirect('home')
 
 	# TODO: Limit 60 days of transactions
-	transactions = Fin_Transactions.objects.filter(item_accounts_id = account_id, item_accounts_id__items_id__user_id=request.user).exclude(item_accounts_id__items_id__deleted=1).order_by('-p_date')[:600]
+	# No need to check as we are already verifying the user above?
+	# transactions = Fin_Transactions.objects.filter(item_accounts_id = account_id, item_accounts_id__items_id = item_id, item_accounts_id__items_id__user_id=request.user).exclude(item_accounts_id__items_id__deleted=1).order_by('-p_date')[:60000]
+	transactions = Fin_Transactions.objects.filter(item_accounts_id = account_id, item_accounts_id__items_id = item_id).exclude(item_accounts_id__items_id__deleted=1).order_by('-p_date')[:60000]
 
 	context = {
 		'account': account_info,
