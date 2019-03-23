@@ -1,7 +1,7 @@
 {% extends 'fin/base.html' %}
 {% block content %}
 
-<div class="test"><p>DEBUG: Linking.....</p></div>
+<div class="test"><h4>Loading. Please Wait...</h4></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
 <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
@@ -9,7 +9,7 @@
 	
 	(function($) {
     	$.ajaxSetup({ 
-			// TODO: CSRF Token???
+			// TODO: CSRF Token
 			data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
 		});
 
@@ -32,17 +32,7 @@
 			webhook: '{{ plaid_webhook_url }}',
 			token: '{{ public_token }}',
 			onSuccess: function(public_token, metadata) {
-				window.console.log('** onSuccess **')
-				window.console.log(public_token)
-				window.console.log(metadata)
-				/*
-				$.post("{% url 'plaid_link_onSuccess' %}", {
-					public_token: public_token,
-					metadata: JSON.stringify(metadata),
-				}, function(data) {
-					window.location.replace("{% url 'link_account_result' %}");
-				});
-				*/
+				// Nothing to do
 			},
 			onLoad: function() {
 				// Triggering Plaid Link on page load
@@ -53,15 +43,15 @@
 				window.console.log('** onExit **')
 				window.console.log(err)
 				window.console.log(metadata);
-				$.post("{% url 'plaid_link_onExit' %}", {
+				$.post("{% url 'plaid_relink_onExit' %}", {
                     // TODO : record this in user action
                     // TODO: update fin_items set active = 1 
 					error: JSON.stringify(err),
 					metadata: JSON.stringify(metadata),
+					item_id: '{{ item_id }}',
+					// item_id: 'Swaroop',
 				}, function(data) {
-					// redirect to a relink/result page
-					// window.location.replace("{% url 'link_account_result' %}");
-					window.location.replace("{% url 'home' %}");
+					window.location.replace("{% url 'link_account_result' %}");
         		});
         	},
 			onEvent: function(eventName, metadata) {

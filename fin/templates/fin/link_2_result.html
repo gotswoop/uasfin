@@ -1,16 +1,19 @@
 {% extends 'fin/base.html' %}
 {% block content %}
 {% load humanize %}
-</style>
 <div id="intro">
 	<div class="row">
 		<div class="col-md-8">
 			<div class="card mb-3">
 				<div class="card-body">
 					{% if recent_action.error_code == None %}
-			  		
-			  			<h4 id="success_summary" class="card-title text-success"><strong>{{ recent_action.institution_name }}</strong> was successfully linked to UASFin!</h4>
-			  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
+			  			{% if recent_action.action == "relink_item" %}
+			  				<h4 id="success_summary" class="card-title text-success">Your account was successfully re-linked to UASFin!</h4>
+				  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
+			  			{% else %}
+			  				<h4 id="success_summary" class="card-title text-success"><strong>{{ recent_action.institution_name }}</strong> was successfully linked to UASFin!</h4>
+				  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
+			  			{% endif %}
 
 			  		{% elif recent_action.error_code == "DUPLICATE_INSTITUTION_PREVIOUSLY_DELETED" %}
 

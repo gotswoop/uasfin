@@ -1,47 +1,45 @@
 {% extends 'fin/base.html' %}
 {% load humanize %}
 {% block content %}
+
 <ol class="breadcrumb">
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
   <li class="breadcrumb-item active">{{ item.p_item_name }} </li>
 </ol>
-<div id="intro">
-	<div class="card border border-success bg-light">
-		<div class="card-header">
-			<div class="float-left">
-	      		<h6>Account details for:</a></h6>
-	      		<h3 class="text-info">{{ item.p_item_name }}</h3>
-				<p>
-					{% if item.inactive %}
-						<strong>Status: </strong><span class="text-danger">Inactive</span><span class="ml-2"><a class="btn btn-sm btn-warning" href="/relink/{{ item.pk }}">Please Re-Link Accounts</a></span><br/>
-					{% else %}
-						<strong>Status: </strong><span class="text-success">Active</span><br/>
-					{% endif %}
-					<strong>Last Updated: </strong>{{ item.item_refresh_date|naturaltime|default_if_none:"<span class='text-danger'>Pending Refresh</span>" }}<br/>
-				</p>
-    		</div>
+<div class="card border border-success bg-light">
+	<div class="card-header">
+		<div class="float-left">
+      		<h6>Accounts in:</a></h6>
+      		<h3 class="text-info">{{ item.p_item_name }}</h3>
+			<p>
+				{% if item.inactive %}
+					<strong>Status: </strong><span class="ml-2"><a class="btn btn-sm btn-danger" href="/relink/{{ item.pk }}">Account Inactive. Please Re-Link</a></span><br/>
+				{% else %}
+					<strong>Status: </strong><span class="text-success">Active</span><br/>
+				{% endif %}
+				<strong>Last Updated: </strong>{{ item.item_refresh_date|naturaltime|default_if_none:"<span class='text-danger'>Pending Refresh</span>" }}<br/>
+			</p>
 		</div>
-		<div class="card-body bg-white">
-			<h6>List of accounts in {{ item.p_item_name }}. Click below for transaction log.</h6>
-			<table class="table table-sm table-hover table-bordered bg-white">
+	</div>
+	<div class="card-body bg-white">
+		<h6>Click each account for list of transactions.</h6>
+		<div class="table-responsive">
+			<table class="table table-sm table-bordered bg-white">
 				<caption><a class="btn btn-outline-info btn-sm" href="{% url 'home'  %}">Back to Dashboard</a></caption>	
-				<thead class="thead-light"><tr><th>#</th><th>{{ item.p_item_name}} Accounts</th><th>Details</th><th>Type</th><th>Balance</th></tr></thead>
+				<thead class="thead-light"><tr><th>Account</th><th class="d-none d-md-table-cell">Details</th><th class="d-none d-md-table-cell">Type</th><th>Balance</th></tr></thead>
 				<tbody>
 					{% for account in accounts %}
-					{% with cnt=forloop.counter %}
 					<tr>
-						<td>{{ cnt }}</td>
 						<td><a class="btn btn-outline-info btn-sm btn-block text-left" href="{% url 'account_transactions' item_id=item.id account_id=account.id %}">{{ account.p_name }}</a></td>
-						<td>{{ account.p_official_name|default_if_none:"-"|truncatechars:20 }}</td>
-						<td>{{ account.p_subtype|title }}</td>
-						<td>$ {{ account.p_balances_current|floatformat:2|intcomma }}</td>
-					</tr>
-					{% endwith %}
+						<td class="d-none d-md-table-cell">{{ account.p_official_name|default_if_none:"-" }}</td>
+						<td class="d-none d-md-table-cell">{{ account.p_subtype|title }}</td>
+						<td>${{ account.p_balances_current|floatformat:0|intcomma }}</td>
+						</tr>
 					{% endfor %}
 				</tbody>
 			</table>
 		</div>
 	</div>
-	<br/><br/>
 </div>
+
 {% endblock content %}

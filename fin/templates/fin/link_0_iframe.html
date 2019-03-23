@@ -1,0 +1,83 @@
+{% extends 'fin/base_for_link.html' %}
+{% block content %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script>
+	(function($) {
+    	$.ajaxSetup({ 
+			// Setting CSRF Token
+			data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+		});
+
+		$(document)
+		.ajaxStart(function () {
+			$('.notice').show();
+		})
+		.ajaxStop(function () {
+			$('.notice').hide();
+		});
+
+		var products = '{{ plaid_products }}'.split(',');
+    
+		var handler = Plaid.create({
+			apiVersion: 'v2',
+			clientName: 'UASFin',
+			env: '{{ plaid_environment }}',
+			product: products,
+			key: '{{ plaid_public_key }}',
+			webhook: '{{ plaid_webhook_url }}',
+			onLoad: function() {
+				// Starts here
+				handler.open();
+			},
+			onEvent: function(eventName, metadata) {
+				/*
+				window.console.log('** onEvent **')
+				window.console.log(eventName);
+				window.console.log(metadata);
+				*/
+				// Posting all events to "plaid_link_onEvent" view
+				$.post("{% url 'plaid_link_onEvent' %}", {
+					eventName: eventName,
+					metadata: JSON.stringify(metadata),
+				});
+			},
+			onSuccess: function(public_token, metadata) {
+				/*
+				window.console.log('** onSuccess **')
+				window.console.log(public_token)
+				window.console.log(metadata)
+				*/
+				// Posting to "plaid_link_OnSuccess" view to
+				// exchange public_token for access_token
+				$.post("{% url 'plaid_link_onSuccess' %}", {
+					public_token: public_token,
+					metadata: JSON.stringify(metadata),
+				}, function(data) {
+					// Redirect to "link_account_result" view
+					window.top.location.replace("{% url 'link_account_result' %}");
+				});
+			},
+			onExit: function(err, metadata) {
+				/*
+				window.console.log('** onExit **')
+				window.console.log(err)
+				window.console.log(metadata);
+				*/
+				// Posting to "plaid_link_onEvent" view to record onExit metadata
+				$.post("{% url 'plaid_link_onExit' %}", {
+					error: JSON.stringify(err),
+					metadata: JSON.stringify(metadata),
+				}, function(data) {
+					// Redirect to "link_account_result" view
+					window.top.location.replace("{% url 'link_account_result' %}");
+        		});
+        	}
+    	});
+    })(jQuery);
+
+</script>
+<div class="notice"><h4>Loading. Please Wait...</h4></div>
+
+{% endblock content %}

@@ -27,7 +27,7 @@ def profile(request):
     staff = False
     if request.user.groups.filter(name='cesr_team').exists():
     	staff = True
-    	
+    
     try:
         user_institutions = Fin_Items.objects.filter(user_id = request.user).order_by('p_item_name')
     except Fin_Items.DoesNotExist:

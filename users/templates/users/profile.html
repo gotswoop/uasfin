@@ -19,19 +19,21 @@
 	    	
 	    </p>
 	    {% if accounts %}
-	    <h5>Summary</h5>
-	    <table class="table table-striped">
-	    	<thead><tr><th>#</th><th>Institution</th><th>Linked On</th><th>Status</th><th>Refreshed / Deleted</th><th>Action</th></tr></thead>
-	    	<tbody>
-	    	{% for account in accounts %}
-	    		{% if account.deleted == 1 %}
-	    			<tr><td>{{ forloop.counter }}</td><td>{{ account.p_item_name }}</td><td>{{ account.date_created|date:"M d, Y" }}</td><td><span class="text-danger">Deleted</span></td><td>{{ account.deleted_date|naturaltime }}</td><td>-</td></tr>
-    			{% else %}
-					<tr><td>{{ forloop.counter }}</td><td>{{ account.p_item_name }}</td><td>{{ account.date_created|date:"M d, Y" }}</td><td>{% if account.inactive == 1 %}<span class="text-danger">Inactive</span>{% else %}<span class="text-success">Active</span>{% endif %}</td><td>{{ account.item_refresh_date|naturaltime|default_if_none:"Pending Refresh" }}</td><td>{% if staff %}<a class="btn btn-danger btn-sm" role="button" href="/unlink/{{ account.id }}">Unlink</a>{% else %}-{% endif %}</td></tr>
-	    		{% endif %}
-    		{% endfor %}
-	    	</tbody>
-	    </table>
+	    <h5>Account Summary</h5>
+	    <div class="table-responsive">
+		    <table class="table table-striped">
+		    	<thead><tr><th>#</th><th>Institution</th><th class="d-none d-md-table-cell">Linked On</th><th>Status</th><th class="d-none d-md-table-cell">Refreshed / Deleted</th><th>Action</th></tr></thead>
+		    	<tbody>
+		    	{% for account in accounts %}
+		    		{% if account.deleted == 1 %}
+		    			<tr><td>{{ forloop.counter }}</td><td>{{ account.p_item_name }}</td><td class="d-none d-md-table-cell">{{ account.date_created|date:"M d, Y" }}</td><td><span class="text-danger">Deleted</span></td><td class="d-none d-md-table-cell">{{ account.deleted_date|naturaltime }}</td><td>-</td></tr>
+	    			{% else %}
+						<tr><td>{{ forloop.counter }}</td><td>{{ account.p_item_name }}</td><td class="d-none d-md-table-cell">{{ account.date_created|date:"M d, Y" }}</td><td>{% if account.inactive == 1 %}<span class="text-danger">Inactive</span>{% else %}<span class="text-success">Active</span>{% endif %}</td><td class="d-none d-md-table-cell">{{ account.item_refresh_date|naturaltime|default_if_none:"Pending Refresh" }}</td><td><a class="btn btn-danger btn-sm" role="button" href="/unlink/{{ account.id }}">Unlink</a></td></tr>
+		    		{% endif %}
+	    		{% endfor %}
+		    	</tbody>
+		    </table>
+		</div>
 	    {% else %}
 	    <div class="alert-warning"><p>Nothing to show. Click <a href="{% url 'link_account' %}"></strong>here</strong></a> to link accounts.</p></div>
 	    {% endif %}

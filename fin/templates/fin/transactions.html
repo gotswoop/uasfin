@@ -1,6 +1,7 @@
 {% extends 'fin/base.html' %}
 {% block content %}
 {% load humanize %}
+{% load mathfilters %}
 
 <ol class="breadcrumb">
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
@@ -8,49 +9,49 @@
   <li class="breadcrumb-item active">{{ account.p_name }} </li>
 </ol>
 
-<div id="intro">
-	<div class="card border border-success bg-light">
-		<div class="card-header">
-			<div class="float-left">
-	      		<h6>List of transactions for: </a></h6>
-	      		<h3 class="text-info">{{ account.p_name }} ({{ account.items_id.p_item_name}})</h3>
-				<p>
-					<strong>Details: </strong>{{ account.p_official_name }}<br/>
-					<strong>Last Updated: </strong>{{ account.account_refresh_date|naturaltime|default_if_none:"<span class='text-danger'>Pending Refresh</span>" }}<br/>
-					<strong>Type: </strong>{{ account.p_subtype|title }}<br/>
-					<strong>Balance: </strong>$ {{ account.p_balances_current|floatformat:2|intcomma }}
-				</p>
-    		</div>
+<div class="card border border-success bg-light">
+	<div class="card-header">
+		<div class="float-left">
+      		<h6>Transactions for: </a></h6>
+      		<h3 class="text-info">{{ account.p_name }} ({{ account.items_id.p_item_name}})</h3>
+			<p>
+				<strong>Details: </strong>{{ account.p_official_name }}<br/>
+				<strong>Type: </strong>{{ account.p_subtype|title }}<br/>
+				<strong>Balance: </strong>${{ account.p_balances_current|floatformat:2|intcomma }}<br/>
+				<strong>Last Updated: </strong>{{ account.account_refresh_date|naturaltime|default_if_none:"<span class='text-danger'>Pending Refresh</span>" }}
+			</p>
 		</div>
-		<div class="card-body bg-white">
-			{% if transactions|length == 0%}
-				<h6 class="text-warning ml-3">No transactions for {{ account.p_name }}</h6>
+	</div>
+	<div class="card-body bg-white">
+		{% if transactions|length == 0%}
+			<h6 class="text-muted ml-2 pb-2">No transactions to show.</h6>
+			<p><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.items_id.pk %}">Back to {{ account.items_id.p_item_name }}</a></p>
+		{% else %}
+			<div class="table-responsive">
 				<table class="table table-sm table-hover table-bordered bg-white">
-					<caption><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.items_id.pk %}">Back to {{ account.items_id.p_item_name }}</a></caption>
-				</table>
-			{% else %}
-				<h6>Transactions for {{ account.p_name }}:</h6>
-				<table class="table table-sm table-hover table-bordered bg-white">
-					<caption><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.items_id.pk %}">Back to {{ account.items_id.p_item_name }}</a></caption>
-					<thead class="thead-light"><tr><th>#</th><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr></thead>
+					<caption>
+						<p><small> * Showing last 6 months of transactions</small></p>
+						<p><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.items_id.pk %}">Back to {{ account.items_id.p_item_name }}</a></p>
+					</caption>
+					<thead class="thead-light"><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr></thead>
 					<tbody>
 						{% for transaction in transactions %}
-						{% with cnt=forloop.counter %}
 						<tr>
-							<td>{{ cnt }}</td>
-							<td>{{ transaction.p_date|date:"Y-m-d" }}</td>
+							<td>{{ transaction.p_date|date:"M d" }}</td>
 							<td>{{ transaction.p_name }}</td>
 							<td>{{ transaction.get_category|default_if_none:"-" }}</td>
-							<td>$ {{ transaction.p_amount|floatformat:2|intcomma }}</td>
+							{% if transaction.p_amount > 0 %}
+								<td>${{ transaction.p_amount|floatformat:2|intcomma }}</td>
+							{% else %}
+								<td class="text-success">-${{ transaction.p_amount|abs|floatformat:2|intcomma }}</td>
+							{% endif %}
 						</tr>
-						{% endwith %}
 						{% endfor %}
 					</tbody>
 				</table>
-			{% endif %}
-		</div>
+			</div>
+		{% endif %}
 	</div>
-	<br/><br/>
 </div>
 
 {% endblock content %}

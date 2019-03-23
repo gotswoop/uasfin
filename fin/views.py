@@ -1,6 +1,6 @@
 #import base64
 #import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import plaid
 import json
 #import time
@@ -95,23 +95,38 @@ def plaid_link_onExit(request):
     return HttpResponse('')
 
 # ------------------------------------------------------------------
-# Link account (Plaid Link page)
+# Link Account (Plaid Link accout page that embeds ifram with instructions on right )
 # ------------------------------------------------------------------
 @login_required()
 def link_account(request):
+
+	# Fetching number of institutions a user has.
+	number_of_items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count()
+	context = {
+		'title': "Link Institution",
+		'items': number_of_items,
+	}
+	return render(request, 'fin/link_1.html', context)
+
+
+# ------------------------------------------------------------------
+# Link iframe (Plaid Link iframe code)
+# ------------------------------------------------------------------
+@login_required()
+def link_iframe(request):
 
     # Configuring the webhook here..
     webhook_url = ('https://' if request.is_secure() else 'http://') + request.get_host() + '/' + settings.PLAID_WEBHOOK_URL
 
     context = {
-	    'title': "Link Institution",
+	    'title': "Link iFrame",
         'plaid_public_key': settings.PLAID_PUBLIC_KEY,
 	    'plaid_environment': settings.PLAID_ENV,
 	    'plaid_products': settings.PLAID_PRODUCTS,
 	    'plaid_webhook_url': webhook_url
     }
 
-    return render(request, 'fin/link_1.html', context)
+    return render(request, 'fin/link_0_iframe.html', context)
 
 # ------------------------------------------------------------------
 # Re-Link account (Plaid Link page for re-linking)
@@ -120,6 +135,8 @@ def link_account(request):
 def relink_account(request, item_id):
 
     try:
+    	# Only inactive accounts can be "re-linked"
+        # item = Fin_Items.objects.exclude(inactive = 0).exclude(deleted = 1).get(id = item_id, user_id = request.user)
         item = Fin_Items.objects.exclude(deleted = 1).get(id = item_id, user_id = request.user)
     except Fin_Items.DoesNotExist:
        	messages.warning(request, format('Invalid Operation.'))
@@ -143,9 +160,60 @@ def relink_account(request, item_id):
         'plaid_products': settings.PLAID_PRODUCTS,
         'plaid_webhook_url': webhook_url,
         'public_token': response['public_token'],
+        'item_id': item_id,
     }
     return render(request, 'fin/relink.html', context)
     
+# ------------------------------------------------------------------
+# Re-Link onExit
+# ------------------------------------------------------------------
+@login_required()
+@require_http_methods(["POST"])
+def plaid_relink_onExit(request):
+	error = request.POST.get('error', '')
+	error = json.loads(error)
+	metadata = request.POST.get('metadata', '')
+	metadata = json.loads(metadata)
+	item_id = request.POST.get('item_id', 0)
+	
+	'''
+	if not isinstance(item_id, int):
+		print(type(item_id))
+		messages.warning(request, format('Invalid Operation.'))
+		return HttpResponse('')
+	'''
+	# Insert into user_actions
+	if error == None:
+		new_action = User_Actions.objects.create(
+			user_id = request.user,
+			user_ip = request.META['REMOTE_ADDR'],
+			action = "relink_item",
+			p_link_session_id = metadata['link_session_id']
+		)
+
+		try:
+			item_obj = Fin_Items.objects.exclude(deleted = 1).get(id = item_id, user_id = request.user)
+		except Fin_Items.DoesNotExist:
+			messages.warning(request, format('Opps. Something bad happended. We are working on it.'))
+			return redirect('home')
+
+		item_obj.inactive = 0
+		item_obj.save()
+	else:
+		new_action = User_Actions.objects.create(
+			user_id = request.user,
+			user_ip = request.META['REMOTE_ADDR'],
+			action = "relink_exit",
+			institution_id = metadata['institution']['institution_id'],
+			institution_name = metadata['institution']['name'],
+			error_code = "INVALID_CREDENTIALS",
+			error_message = "The provided credentials were not correct. Please try again.",
+			p_link_session_id = metadata['link_session_id']
+		)
+
+	# Dont' return anything
+	# return JsonResponse({'error': error, 'metadata': metadata})
+	return HttpResponse('')
 
 # ------------------------------------------------------------------
 # Link account results
@@ -159,7 +227,7 @@ def link_account_result(request):
     
     number_of_items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count()
     
-    recent_action = User_Actions.objects.filter(user_id = request.user, action__in=["link_item", "link_exit"]).order_by('-date_created').first()
+    recent_action = User_Actions.objects.filter(user_id = request.user, action__in=["link_item", "link_exit", "relink_item"]).order_by('-date_created').first()
     
     first_timer = 1
     if Users_With_Linked_Institutions.objects.filter(user_id = request.user).count():
@@ -485,10 +553,12 @@ def account_transactions(request, item_id, account_id):
 			# messages.warning(request, format('Invalid operation. ! Authorized.'))
 			return redirect('home')
 
-	# TODO: Limit 60 days of transactions
+	
 	# No need to check as we are already verifying the user above?
 	# transactions = Fin_Transactions.objects.filter(item_accounts_id = account_id, item_accounts_id__items_id = item_id, item_accounts_id__items_id__user_id=request.user).exclude(item_accounts_id__items_id__deleted=1).order_by('-p_date')[:60000]
-	transactions = Fin_Transactions.objects.filter(item_accounts_id = account_id, item_accounts_id__items_id = item_id).exclude(item_accounts_id__items_id__deleted=1).order_by('-p_date')[:60000]
+	# Only showing last 6 months of transactions (183days)
+	past_months = datetime.today() - timedelta(days=183)
+	transactions = Fin_Transactions.objects.filter(p_date__gte= past_months).filter(item_accounts_id = account_id, item_accounts_id__items_id = item_id).exclude(item_accounts_id__items_id__deleted=1).order_by('-p_date')
 
 	context = {
 		'account': account_info,
@@ -503,10 +573,12 @@ def account_transactions(request, item_id, account_id):
 @login_required()
 def unlink_account(request, item_id):
 	
+	'''
 	# Check if authorized to delete. Only members of cesr_team can delete accounts
 	if not request.user.groups.filter(name='cesr_team').exists():
 		messages.warning(request, format('Only staff can unlink accounts.'))
 		return redirect('profile')
+	'''
     
 	try:
 		# Checking if user deleting is the owner
@@ -549,4 +621,3 @@ def unlink_account(request, item_id):
 
 	messages.success(request, format(item.p_item_name + ' Removed.'))
 	return redirect('profile')
-    
