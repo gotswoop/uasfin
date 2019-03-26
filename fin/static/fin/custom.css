@@ -5,9 +5,6 @@
 .sticky-footer-wrapper {
 	/* Can also use class vh-100 with bootstrap4 */
 	min-height:100vh;
-	/* Can also use class pt-5 with bootstrap4 */
-	padding-top: 3rem;
-	
 }
 
 .flex-fill {

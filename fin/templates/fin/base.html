@@ -19,7 +19,7 @@
 </head>
 <body class="d-flex flex-column sticky-footer-wrapper">
 	<header>
-		<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
 			<a class="navbar-brand" href="/"><img src="{% static 'fin/uas_logo.png' %}" style="width:33px;height:30px;" class="d-inline-block align-top mr-2" alt="">UASFin</a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
@@ -41,11 +41,11 @@
 							<a class="nav-link" href="{% url 'profile' %}">My Profile ({{ user.username }})</a>
 						</li>
 						<li class="nav-item">
-							<a class="btn btn-outline-info" href="{% url 'logout' %}">Logout</a>
+							<a class="nav-link" href="{% url 'logout' %}">Logout</a>
 						</li>
 					{% else %}
 						<li class="nav-item">
-							<a class="btn btn-outline-info" href="{% url 'login' %}">Login</a>
+							<a class="nav-link" href="{% url 'login' %}">Login</a>
 						</li>
 					{% endif %}
 				</ul>
