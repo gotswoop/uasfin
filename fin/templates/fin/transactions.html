@@ -24,7 +24,7 @@
 	</div>
 	<div class="card-body bg-white">
 		{% if transactions|length == 0%}
-			<h6 class="text-muted ml-2 pb-2">No transactions to show.</h6>
+			<p class="ml-2 pb-2"><small>No transactions to show.</small></p>
 			<p><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.items_id.pk %}">Back to {{ account.items_id.p_item_name }}</a></p>
 		{% else %}
 			<div class="table-responsive">
