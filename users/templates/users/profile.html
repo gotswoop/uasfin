@@ -4,12 +4,12 @@
 {% block content %}
 <ol class="breadcrumb">
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
-  <li class="breadcrumb-item active">My Account</li>
+  <li class="breadcrumb-item active">My Profile</li>
 </ol>
 <div class="intro">
 	<div class="card border-info">
 	  <div class="card-body">
-	    <h3 class="card-title">My Account</h3>
+	    <h3 class="card-title">My Profile</h3>
 	    <p class="card-text">
 	    	{% if staff %} 
 				<h6 class="text-danger font-weight-bold">CESR Team Member</h6> 
@@ -19,7 +19,7 @@
 	    	
 	    </p>
 	    {% if accounts %}
-	    <h5>Account Summary</h5>
+	    <h5>My Activity</h5>
 	    <div class="table-responsive">
 		    <table class="table table-striped">
 		    	<thead><tr><th>#</th><th>Institution</th><th class="d-none d-md-table-cell">Linked On</th><th>Status</th><th class="d-none d-md-table-cell">Refreshed / Deleted</th><th>Action</th></tr></thead>

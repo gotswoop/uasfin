@@ -34,7 +34,6 @@ def fetch_transactions_from_plaid(client, item, logger):
 	except plaid.errors.PlaidError as e:
 		return format_error(e)
   
-	# pretty_print_response(transactions_response)
 	# Update account information here. (just once)
 	for account in transactions_response['accounts']:
 		try:
@@ -74,8 +73,7 @@ def fetch_transactions_from_plaid(client, item, logger):
 		else:
 			logger.debug('ERROR: Cannot find the account that we are trying to add or update transactions into')
 
-
-	remaining_transactions = transactions_response['total_transactions'] - count
+	remaining_transactions = transactions_response.get('total_transactions', 0) - count
 
 	while remaining_transactions > 0:
 		offset = offset + count - 1
@@ -136,33 +134,33 @@ def insert_transaction(fin_accounts_obj, transaction):
 
 	new_transaction = Fin_Transactions.objects.create(
 		item_accounts_id = fin_accounts_obj,
-		p_account_owner = transaction['account_owner'],
-		p_amount = transaction['amount'],
-		p_category = transaction['category'],
-		p_category_id = transaction['category_id'],
-		p_date = transaction['date'],
-		p_iso_currency_code = transaction['iso_currency_code'],
-		p_location_address = transaction['location']['address'],
-		p_location_city = transaction['location']['city'],
-		p_location_lat = transaction['location']['lat'],
-		p_location_lon = transaction['location']['lon'],
-		p_location_state = transaction['location']['state'],
-		p_location_store_number = transaction['location']['store_number'],
-		p_location_zip = transaction['location']['zip'],
-		p_name = transaction['name'],
-		p_payment_meta_by_order_of = transaction['payment_meta']['by_order_of'],
-		p_payment_meta_payee = transaction['payment_meta']['payee'],
-		p_payment_meta_payer = transaction['payment_meta']['payer'],
-		p_payment_meta_payment_method = transaction['payment_meta']['payment_method'],
-		p_payment_meta_payment_processor = transaction['payment_meta']['payment_processor'],
-		p_payment_meta_ppd_id = transaction['payment_meta']['ppd_id'],
-		p_payment_meta_reason = transaction['payment_meta']['reason'],
-		p_payment_meta_reference_number = transaction['payment_meta']['reference_number'],
-		p_pending = transaction['pending'],
-		p_pending_transaction_id = transaction['pending_transaction_id'],
-		p_transaction_id = transaction['transaction_id'],
-		p_transaction_type = transaction['transaction_type'],
-		p_unofficial_currency_code = transaction['unofficial_currency_code']
+		p_account_owner = transaction.get('account_owner'),
+		p_amount = transaction.get('amount'),
+		p_category = transaction.get('category'),
+		p_category_id = transaction.get('category_id'),
+		p_date = transaction.get('date'),
+		p_iso_currency_code = transaction.get('iso_currency_code'),
+		p_location_address = transaction.get('location').get('address'),
+		p_location_city = transaction.get('location').get('city'),
+		p_location_lat = transaction.get('location').get('lat'),
+		p_location_lon = transaction.get('location').get('lon'),
+		p_location_state = transaction.get('location').get('state'),
+		p_location_store_number = transaction.get('location').get('store_number'),
+		p_location_zip = transaction.get('location').get('zip'),
+		p_name = transaction.get('name'), # TODO: Handle UTC 
+		p_payment_meta_by_order_of = transaction.get('payment_meta').get('by_order_of'),
+		p_payment_meta_payee = transaction.get('payment_meta').get('payee'),
+		p_payment_meta_payer = transaction.get('payment_meta').get('payer'),
+		p_payment_meta_payment_method = transaction.get('payment_meta').get('payment_method'),
+		p_payment_meta_payment_processor = transaction.get('payment_meta').get('payment_processor'),
+		p_payment_meta_ppd_id = transaction.get('payment_meta').get('ppd_id'),
+		p_payment_meta_reason = transaction.get('payment_meta').get('reason'),
+		p_payment_meta_reference_number = transaction.get('payment_meta').get('reference_number'),
+		p_pending = transaction.get('pending'),
+		p_pending_transaction_id = transaction.get('pending_transaction_id'),
+		p_transaction_id = transaction.get('transaction_id'),
+		p_transaction_type = transaction.get('transaction_type'),
+		p_unofficial_currency_code = transaction.get('unofficial_currency_code')
 	)
 
 	return new_transaction
