@@ -2,14 +2,14 @@
 {% load humanize %}
 {% block content %}
 <div class="row">
-	<div class="col-sm-8">
+	<div class="col-md-8">
 		<div class="card border bg-light">
 			<div class="card-header">
 				<div class="row">
-					<div class="col-sm-6">
+					<div class="col-md-6">
 						<span class="text btn btn-lg" disabled="true">{{ items|length }} Institution{% ifnotequal items|length 1 %}s{% endifnotequal %} Linked</span>
 					</div>
-					<div class="col-sm-6">
+					<div class="col-md-6">
 						<a class="btn btn-lg btn-primary" href="{% url 'link_account' %}" role="button">Link More Institutions</a>
 					</div>
 	    		</div>
@@ -39,7 +39,7 @@
 		</div>
 		<br/><br/>
 	</div>
-	<div class="col-sm-4">
+	<div class="col-md-4">
 		<div class="card">
 			<div class="card-header bg-success text-white">
 				<h6>Number of Institutions Linked: {{ items|length }}</h6>
