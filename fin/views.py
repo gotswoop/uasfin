@@ -576,12 +576,13 @@ def account_transactions(request, item_id, account_id):
 
 
 # ------------------------------------------------------------------
-# Remove item (TESTING ONLY)
+# Unlink Account
 # ------------------------------------------------------------------
 @login_required()
 def unlink_account(request, item_id):
 	
 	'''
+	# Uncomment if you only want to allow members of CESR TEAM to unlink accounts
 	# Check if authorized to delete. Only members of cesr_team can delete accounts
 	if not request.user.groups.filter(name='cesr_team').exists():
 		messages.warning(request, format('Only staff can unlink accounts.'))
@@ -595,37 +596,56 @@ def unlink_account(request, item_id):
 		item = None
         
 	if not item:
-		messages.warning(request, format('Cannot delete. Not the owner.'))
+		# messages.warning(request, format('Cannot delete. Not the owner.'))
 		return redirect('profile')
-    	
-	# Provide the access token for the Item you want to remove
-	# TODO - this does not work!!!!!!!!!
-	try:
-		response = client.Item.remove(item.p_access_token)
-	except plaid.errors.PlaidError as e:
-		return JsonResponse(format_error(e))
 
-	if response['removed'] == True:
-		item.p_access_token = None # Setting access_token to null
-		item.deleted = 1
-		item.deleted_date = datetime.now()
-		item.save(update_fields=['p_access_token','deleted','deleted_date'])
-		# Updating actions table.
-		new_action = User_Actions.objects.create(
-			user_id = request.user,
-			user_ip = request.META['REMOTE_ADDR'],
-			action = "unlink_item",
-			institution_id = item.p_institution_id,
-			institution_name = item.p_item_name
-		)
-		logger.debug('REMOVE ITEM - User ' + str(request.user.id) + ' removed item id ' + str(item_id) + ' : ' + json.dumps(response))
+	# POST REQUEST
+	if request.method == "POST":
+		unlink_item = int(request.POST.get('unlink', 0))
+
+		if unlink_item != item_id:
+			messages.warning(request, format('Invalid Operation.'))
+			return redirect('profile')
+
+		# TODO - Handle error when item trying to remove is not in Plaid or if access_token is old
+		try:
+			response = client.Item.remove(item.p_access_token)
+		except plaid.errors.PlaidError as e:
+			return JsonResponse(format_error(e))
+
+		if response['removed'] == True:
+			# Updating Fin_Items and flagging this account as deleted.
+			item.p_access_token = None # Setting access_token to null
+			item.deleted = 1
+			item.deleted_date = datetime.now()
+			item.save(update_fields=['p_access_token','deleted','deleted_date'])
+
+			# Recording this event in user actions
+			new_action = User_Actions.objects.create(
+				user_id = request.user,
+				user_ip = request.META['REMOTE_ADDR'],
+				action = "unlink_item",
+				institution_id = item.p_institution_id,
+				institution_name = item.p_item_name
+			)
+
+		else:
+			messages.warning(request, format('Something went wrong. Please report to help desk.'))
+			return redirect('profile')
+	    
+		# Resetting Users_With_Linked_Institutions
+		if not Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count():
+			Users_With_Linked_Institutions.objects.filter(user_id = request.user).delete()
+
+		messages.success(request, format(item.p_item_name + ' Removed.'))
+		return redirect('profile')
+
+	# GET request. Show warning page.
 	else:
-		messages.warning(request, format('Something went wrong. Please report to help desk.'))
-		return redirect('profile')
-    
-	# reset table 
-	if not Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count():
-		Users_With_Linked_Institutions.objects.filter(user_id = request.user).delete()
-
-	messages.success(request, format(item.p_item_name + ' Removed.'))
-	return redirect('profile')
+		context = {
+			'item_id': item.pk,
+			'institution_name': item.p_item_name
+		}
+		return render(request, 'fin/unlink_warning.html', context)
+    	
+	

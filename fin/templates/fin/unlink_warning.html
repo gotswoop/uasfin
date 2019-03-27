@@ -1,0 +1,31 @@
+{% extends 'fin/base.html' %}
+{% block content %}
+<div id="unlink_warning">
+	<div class="card text-white bg-danger mb-3">
+		<div class="card-header">WARNING !!!</div>
+		<div class="card-body"">
+  			<h4 class="card-title">You are about to unlink {{ institution_name }} !!!</h4>
+    		<p class="card-text">
+		    	If you proceed
+		    	<ol>
+				<li>You will <strong>NOT</strong> be able to link this account again</li>
+				<li>You will <strong>STOP</strong> receiving monthly rewards credits</li>
+				</ol>
+				Are you sure you want to continue?
+			</p>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 mr-auto">
+			<form action="{% url 'unlink_account' item_id=item_id %}" method="POST">
+				{% csrf_token %}
+    			<input name="unlink" type="hidden" value="{{ item_id }}">
+	   			<input class="btn btn-lg btn-danger m-3" type="submit" value="Yes. Unlink {{ institution_name }}">
+			</form>
+		</div>
+		<div class="col-md-6 ml-auto">
+			<a class="btn btn-lg btn-outline-info m-3" href="{% url 'profile' %}" role="button">No. Go back to Profile</a>
+		</div>
+	</div>
+</div>
+{% endblock content %}
