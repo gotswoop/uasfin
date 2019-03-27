@@ -116,13 +116,18 @@ def fetch_transactions_from_plaid(client, item, logger):
 
 def log_incoming_webhook(incoming, remote_ip):
 
+	if incoming.get('error') is None:
+		_error = incoming.get('error')
+	else:
+		_error = json.dumps(incoming.get('error'))
+
 	# TODO: error handling
 	new_plaid_webhook_log = Plaid_Webhook_Logs.objects.create(
 		remote_ip = remote_ip,
 		p_webhook_type = incoming.get('webhook_type'),
 		p_webhook_code = incoming.get('webhook_code'),
 		p_item_id  = incoming.get('item_id'),
-		p_error = incoming.get('error'),
+		p_error = _error,
 		p_new_transactions = incoming.get('new_transactions'),
 		p_removed_transactions = incoming.get('removed_transactions'),
 		p_raw_payload = json.dumps(incoming)

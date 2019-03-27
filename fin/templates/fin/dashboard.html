@@ -23,7 +23,11 @@
 						<tr>
 							<td style="width: 85%"><a class="btn btn-outline-info btn-md btn-block text-left" href="{% url 'account_details' item_id=item.id %}">{{ cnt }}. {{ item.p_item_name }}</a></td>
 							{% if item.inactive %}
+								{% if item.inactive_status == "ITEM_LOGIN_REQUIRED" %}
 									<td><span class="ml-2"><a class="btn btn-sm btn-danger" href="/relink/{{ item.pk }}">Inactive</a></span></td>
+								{% else %}
+									<td><span class="text-danger"><strong>Acct Error</strong></span></td>
+								{% endif %}
 							{% else %}
 								<td><span class="text-success">Active</span></td>
 							{% endif %}

@@ -13,7 +13,11 @@
       		<h3 class="text-info">{{ item.p_item_name }}</h3>
 			<p>
 				{% if item.inactive %}
-					<strong>Status: </strong><span class="ml-2"><a class="btn btn-sm btn-danger" href="/relink/{{ item.pk }}">Account Inactive. Please Re-Link</a></span><br/>
+					{% if item.inactive_status == "ITEM_LOGIN_REQUIRED" %}
+						<strong>Status: </strong><a class="btn btn-sm btn-danger" href="/relink/{{ item.pk }}">Inactive. Please Re-Link</a>	<br/>
+					{% else %}
+						<strong>Status: </strong><span class="text-danger"><strong>Account Error!</strong></span> Please contact the <a href="{% url 'help' %}">helpdesk.</a><br/>
+					{% endif %}
 				{% else %}
 					<strong>Status: </strong><span class="text-success">Active</span><br/>
 				{% endif %}

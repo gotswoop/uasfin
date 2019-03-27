@@ -18,6 +18,7 @@ from django.conf import settings
 from django.contrib import messages
 import logging
 from django.core import serializers
+from django.db.models import Q
 
 access_token = None
 client = plaid.Client(client_id=settings.PLAID_CLIENT_ID, secret=settings.PLAID_SECRET, public_key=settings.PLAID_PUBLIC_KEY, environment=settings.PLAID_ENV, api_version='2018-05-22')
@@ -441,8 +442,8 @@ def plaid_link_onSuccess(request):
 @csrf_exempt
 def webhook(request):
 	incoming = {}
+	# Receiving request.body in bytes and converting to a dict
 	incoming = json.loads(request.body)
-	# TODO: Handle Special chars??
 	# incoming = json.loads(request.body.decode('UTF-8')) # decode needed for python < 3.6
 
 	# Logging incoming webhook into database
@@ -468,35 +469,42 @@ def webhook(request):
 	# TODO: Check other webhook_types and only if ERROR is NONE
 	if webhook_type == "TRANSACTIONS":
 
-		if webhook_code in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "DEFAULT_UPDATE"]:
-			response = fetch_transactions_from_plaid(client, item, logger)
-		elif webhook_code == "TRANSACTIONS_REMOVED":                
-			
-			logger.debug('Rare remove transactions for item_id = ' + item_id)
-		else:
-			# TODO: Throw error and log it.
-			logger.debug('# ERROR - Webook. Should not be in here. ' + webhook_code + ' - ' + item_id)
+		response = None
 
-		# Setting the item_refresh_date to now
+		if webhook_code in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "DEFAULT_UPDATE"]:
+			# Fetching Transactions
+			response = fetch_transactions_from_plaid(client, item, logger)
+		elif webhook_code == "TRANSACTIONS_REMOVED":
+			# Removing Transactions
+			transaction_ids_to_remove = incoming.get('removed_transactions')
+			removed_count = Fin_Transactions.objects.filter(**{'p_transaction_id__in': transaction_ids_to_remove}).update(removed = 1)
+			if not isinstance(removed_count, int):
+				response = "TRANSACTION_REMOVE_NOT_OK"
+		else:
+			# Unhandled cases
+			logger.debug('# ERROR - Webook (TRANSACTIONS). Should not be in here. ' + webhook_code + ' - ' + item_id)
+
+		# Setting the fin_items.item_refresh_date to now
 		if response == None:
 			item.item_refresh_date = datetime.now()
 			item.save(update_fields=['item_refresh_date'])
 		else:
-			# Log error and do nothing.
-			# return JsonResponse(response)	
-			logger.debug('# ERROR - Webook. Issues with fetching / inserting transactions. ' + item_id  + ' - ' + response)
+			logger.debug('# ERROR - Webook (TRANSACTIONS) Webook Code' + webhook_code + ' Item id ' + item_id  + ' Details:' + response)
 
 	elif webhook_type == "ITEM":
+
 		if webhook_code == "ERROR":
-			logger.debug('# TODO - Webhook. Time to update credentials for ' + item_id)
-			# Set fin_items.active = 0
+			item.inactive = 1
+			item.inactive_date = datetime.now()
+			item.inactive_status = incoming.get('error').get('error_code')
+			item.save(update_fields=['inactive', 'inactive_date','inactive_status'])
 		elif webhook_code == "WEBHOOK_UPDATE_ACKNOWLEDGED":                
-			# DO NOTHING FOR NOW
-			logger.debug('Webhook update acknowleded' + item_id)
-			logger.debug('# TODO - Webhook. Webook update acknowleded ' + item_id)
+			logger.debug('# TODO - Webhook (ITEM). Webook update acknowleded ' + webhook_code + ' - ' + item_id)
+		else:
+			# Unhandled cases
+			logger.debug('# ERROR - Webook (ITEM). Should not be in here. ' + webhook_code + ' - ' + item_id)
 
 	return HttpResponse('')
-
 
 # ------------------------------------------------------------------
 # Account details view for a specific item id
@@ -558,7 +566,7 @@ def account_transactions(request, item_id, account_id):
 	# transactions = Fin_Transactions.objects.filter(item_accounts_id = account_id, item_accounts_id__items_id = item_id, item_accounts_id__items_id__user_id=request.user).exclude(item_accounts_id__items_id__deleted=1).order_by('-p_date')[:60000]
 	# Only showing last 6 months of transactions (183days)
 	past_months = datetime.today() - timedelta(days=183)
-	transactions = Fin_Transactions.objects.filter(p_date__gte= past_months).filter(item_accounts_id = account_id, item_accounts_id__items_id = item_id).exclude(item_accounts_id__items_id__deleted=1).order_by('-p_date')
+	transactions = Fin_Transactions.objects.exclude(removed=1).filter(p_date__gte= past_months).filter(item_accounts_id = account_id, item_accounts_id__items_id = item_id).exclude(item_accounts_id__items_id__deleted=1).order_by('-p_date')
 
 	context = {
 		'account': account_info,

@@ -38,7 +38,7 @@
 						{% for transaction in transactions %}
 						<tr>
 							<td>{{ transaction.p_date|date:"M d" }}</td>
-							<td>{{ transaction.p_name }}</td>
+							<td>{{ transaction.p_name }} {% if transaction.p_pending %}<small>(pending)</small>{% endif %}</td>
 							<td>{{ transaction.get_category|default_if_none:"-" }}</td>
 							{% if transaction.p_amount > 0 %}
 								<td>${{ transaction.p_amount|floatformat:2|intcomma }}</td>
