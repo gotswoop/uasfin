@@ -455,7 +455,7 @@ def webhook(request):
 	# TODO: Only handling webhook_type of TRANSCTIONS and ITEM
 	if webhook_type not in ["TRANSACTIONS", "ITEM"]:
 		logger.debug('# TODO - Webhook. Type not yet handled. ' + webhook_type)
-		return HttpResponse('')
+		return HttpResponse(status=200)
 	
 	# There won't be an item_id for other type of webhooks
 	item_id = incoming.get('item_id')
@@ -464,7 +464,7 @@ def webhook(request):
 		item = Fin_Items.objects.exclude(deleted = 1).get(p_item_id = item_id)
 	except Fin_Items.DoesNotExist:
 		logger.debug('# WARN - Webhook. No corresponding item_id in fin_items table. ' + json.dumps(incoming))
-		return HttpResponse('')
+		return HttpResponse(status=404)
 	
 	# TODO: Check other webhook_types and only if ERROR is NONE
 	if webhook_type == "TRANSACTIONS":
@@ -504,7 +504,7 @@ def webhook(request):
 			# Unhandled cases
 			logger.debug('# ERROR - Webook (ITEM). Should not be in here. ' + webhook_code + ' - ' + item_id)
 
-	return HttpResponse('')
+	return HttpResponse(status=200)
 
 # ------------------------------------------------------------------
 # Account details view for a specific item id
@@ -601,7 +601,12 @@ def unlink_account(request, item_id):
 
 	# POST REQUEST
 	if request.method == "POST":
-		unlink_item = int(request.POST.get('unlink', 0))
+		unlink_item = request.POST.get('unlink', 0)
+
+		try:
+			unlink_item = int(unlink_item)
+		except ValueError:
+			return HttpResponse(status=500) 
 
 		if unlink_item != item_id:
 			messages.warning(request, format('Invalid Operation.'))
@@ -637,13 +642,17 @@ def unlink_account(request, item_id):
 		if not Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count():
 			Users_With_Linked_Institutions.objects.filter(user_id = request.user).delete()
 
-		messages.success(request, format(item.p_item_name + ' Removed.'))
+		messages.success(request, format(item.p_item_name + ' removed.'))
 		return redirect('profile')
 
 	# GET request. Show warning page.
 	else:
+		
+		number_of_items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count()
+
 		context = {
 			'item_id': item.pk,
+			'items': number_of_items,
 			'institution_name': item.p_item_name
 		}
 		return render(request, 'fin/unlink_warning.html', context)

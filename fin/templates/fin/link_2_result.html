@@ -42,14 +42,14 @@
 		</div>
 		<p>
 			{% if recent_action.error_code == "USER_EXITED_PLAID_LINK" or recent_action.error_code == "INVALID_CREDENTIALS" %}
-				<a class="btn btn-lg btn-primary" href="{% url 'link_account' %}" role="button">Link Account</a>
+				<a class="btn btn-lg btn-primary mt-2 mr-3" href="{% url 'link_account' %}" role="button">Link Account</a>
 			{% else %}
-				<a class="btn btn-lg btn-primary" href="{% url 'link_account' %}" role="button">Link Another Account</a>
+				<a class="btn btn-lg btn-primary mt-2 mr-3" href="{% url 'link_account' %}" role="button">Link Another Account</a>
 			{% endif %}
 			{% if first_timer and items %}
-				<a class="link-btn-no btn btn-lg btn-outline-info ml-3" href="{% url 'link_account_summary' %}" role="button">No</a>
+				<a class="link-btn-no btn btn-lg btn-outline-info mt-2" href="{% url 'link_account_summary' %}" role="button">No</a>
 			{% else %}
-				<a class="link-btn-no btn btn-lg btn-outline-info ml-3" href="{% url 'home' %}" role="button">No</a>
+				<a class="link-btn-no btn btn-lg btn-outline-info mt-2" href="{% url 'home' %}" role="button">No</a>
 			{% endif %}
 		</p>
 		<br/><br/>

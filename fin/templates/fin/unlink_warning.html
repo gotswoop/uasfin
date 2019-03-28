@@ -1,30 +1,55 @@
 {% extends 'fin/base.html' %}
+{% load static %}
 {% block content %}
-<div id="unlink_warning">
-	<div class="card text-white bg-danger mb-3">
-		<div class="card-header">WARNING !!!</div>
-		<div class="card-body"">
-  			<h4 class="card-title">You are about to unlink {{ institution_name }} !!!</h4>
-    		<p class="card-text">
-		    	If you proceed
-		    	<ol>
-				<li>You will <strong>NOT</strong> be able to link this account again</li>
-				<li>You will <strong>STOP</strong> receiving monthly rewards credits</li>
-				</ol>
-				Are you sure you want to continue?
-			</p>
+<div class="row">
+	<div class="col-md-8">
+		<div class="card text-dark mb-3">
+			<div class="card-header" style="background: white; color:black;"><h4><img src="{% static 'fin/warning.gif' %}" style="width:30px;"/><span class="text-danger ml-2">WARNING: You are about to unlink {{ institution_name }} !!!</span></h4></div>
+			<div class="card-body">
+	    		<p class="card-text">
+			    	<ol>
+					<li>You will <strong>NOT</strong> be able to link this account again</li>
+					<li>You will <strong>STOP</strong> receiving monthly rewards earnings</li>
+					</ol>
+					Are you sure you want to continue?
+				</p>
+			</div>
 		</div>
-	</div>
-	<div class="row">
-		<div class="col-md-6 mr-auto">
+		<p>
 			<form action="{% url 'unlink_account' item_id=item_id %}" method="POST">
 				{% csrf_token %}
     			<input name="unlink" type="hidden" value="{{ item_id }}">
-	   			<input class="btn btn-lg btn-danger m-3" type="submit" value="Yes. Unlink {{ institution_name }}">
+	   			<input class="btn btn-lg btn-danger mt-2 mr-3" type="submit" value="Yes. Unlink {{ institution_name }}">
+	   			<a class="btn btn-lg btn-outline-info mt-2" href="{% url 'profile' %}" role="button">No. Go back to Profile</a>
 			</form>
-		</div>
-		<div class="col-md-6 ml-auto">
-			<a class="btn btn-lg btn-outline-info m-3" href="{% url 'profile' %}" role="button">No. Go back to Profile</a>
+		</p>
+	</div>
+	<div class="col-md-4">
+		<div class="card">
+			<div class="card-header bg-success text-white">
+				<h6>Number of Institutions Linked: {{ items }}</h6>
+				<h6>Monthly Rewards Earnings: ${% widthratio 5 1 items %}</h6></div>
+		 </div>
+		<div class="card mt-2">
+		  <div class="card-body border border-success">
+		    <p class="card-text">
+		    	These are the accounts often linked by other survey participants. Please take a look at this list:
+				<ul>
+				<li>Checking Accounts</li>
+				<li>Savings Accounts</li>
+				<li>Credit Card Accounts</li>
+				<li>Pre-paid Credit Card</li>
+				<li>Money Market Accounts</li>
+				<li>CD's</li>
+				<li>Mortgages</li>
+				<li>Home Equity Line of Credit (HELOC)</li>
+				<li>Employer-sponsored retirement accounts (401k, 403(b), and similar)</li> 
+				<li>Investment Retirement Accounts (IRA)</li>
+				<li>Brokerage Accounts</li>
+				</ul>
+				Think about all the accounts you have linked. Do you have accounts in other financial institutions you may have forgotten and would like to link?
+			</p>
+		  </div>
 		</div>
 	</div>
 </div>
