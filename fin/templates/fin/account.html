@@ -1,5 +1,6 @@
 {% extends 'fin/base.html' %}
 {% load humanize %}
+{% load static %}
 {% block content %}
 
 <ol class="breadcrumb">
@@ -9,19 +10,26 @@
 <div class="card border border-success bg-light">
 	<div class="card-header">
 		<div class="float-left">
-      		<h6>Accounts in:</a></h6>
-      		<h3 class="text-info">{{ item.p_item_name }}</h3>
-			<p>
+      		<h2 class="text-info mt-3 mb-3">{{ item.p_item_name }}</h2>
+      		<p>
 				{% if item.inactive %}
 					{% if item.inactive_status == "ITEM_LOGIN_REQUIRED" %}
-						<strong>Status: </strong><a class="btn btn-sm btn-danger" href="/relink/{{ item.pk }}">Inactive. Please Re-Link</a>	<br/>
+						<img src="{% static 'fin/warning.gif' %}" style="height:2rem;"/><span class="ml-2 text-danger"><strong>Account Inactive.</strong></span> The login details of this institution have changed. Please update by clicking on the "<strong>Re-Link Institution</strong>" button.</span>
+						<br/><br/>
+						<a class="btn btn-warning btn-md" href="{% url 'relink_account' item_id=item.pk %}"><strong>Re-Link Institution</strong></a>
 					{% else %}
-						<strong>Status: </strong><span class="text-danger"><strong>Account Error!</strong></span> Please contact the <a href="{% url 'help' %}">helpdesk.</a><br/>
+						<img src="{% static 'fin/warning.gif' %}" style="height:2rem;"/><span class="ml-2 text-danger"><strong>Account Error. </strong></span> Please notify the <a href="{% url 'help' %}">helpdesk.</a>
 					{% endif %}
 				{% else %}
-					<strong>Status: </strong><span class="text-success">Active</span><br/>
+					<img src="{% static 'fin/ok.png' %}" style="height:1.25rem;"/><span class="text-success ml-2"><strong>Active</strong></span>
 				{% endif %}
-				<strong>Last Updated: </strong>{{ item.item_refresh_date|naturaltime|default_if_none:"<span class='text-danger'>Pending Refresh</span>" }}<br/>
+			</p>
+			<p>
+	      		{% if item.item_refresh_date %}
+					<span class='text-muted'>Refreshed {{ item.item_refresh_date|naturaltime }}</span>
+				{% else %}
+					<span class='text-muted'>Account Refresh Pending</span>
+				{% endif %}
 			</p>
 		</div>
 	</div>

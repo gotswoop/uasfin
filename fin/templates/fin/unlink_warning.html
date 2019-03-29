@@ -3,9 +3,10 @@
 {% block content %}
 <div class="row">
 	<div class="col-md-8">
-		<div class="card text-dark mb-3">
-			<div class="card-header" style="background: white; color:black;"><h4><img src="{% static 'fin/warning.gif' %}" style="width:30px;"/><span class="text-danger ml-2">WARNING: You are about to unlink {{ institution_name }} !!!</span></h4></div>
+		<div class="card text-white bg-danger mb-3">
+			<div class="card-header"><h5><img src="{% static 'fin/warning.gif' %}" style="width:30px;"/><span class="ml-2">WARNING</span></h5></div>
 			<div class="card-body">
+				 <h5 class="card-title">You are about to unlink {{ institution_name }}</h5>
 	    		<p class="card-text">
 			    	<ol>
 					<li>You will <strong>NOT</strong> be able to link this account again</li>

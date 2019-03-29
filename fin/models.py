@@ -28,7 +28,7 @@ class Fin_Items(models.Model):
 		db_table = "fin_items"
 
 class Fin_Accounts(models.Model):
-	items_id = models.ForeignKey(Fin_Items, db_column='items_id', on_delete=models.PROTECT)
+	item_id = models.ForeignKey(Fin_Items, db_column='item_id', on_delete=models.PROTECT)
 	p_account_id = models.CharField(max_length=250)
 	p_balances_available = models.DecimalField(max_digits=19, decimal_places=4, null=True)
 	p_balances_current = models.DecimalField(max_digits=19, decimal_places=4, null=True)
@@ -45,11 +45,11 @@ class Fin_Accounts(models.Model):
 	account_refresh_date = models.DateTimeField(null=True)
 	
 	class Meta:
-		unique_together = ("items_id", "p_account_id")
+		unique_together = ("item_id", "p_account_id")
 		db_table = "fin_accounts"
 
 class Fin_Transactions(models.Model):
-	item_accounts_id = models.ForeignKey(Fin_Accounts, db_column='item_accounts_id', on_delete=models.PROTECT)
+	account_id = models.ForeignKey(Fin_Accounts, db_column='account_id', on_delete=models.PROTECT)
 	p_account_owner = models.CharField(max_length=250, null=True)
 	p_amount = models.DecimalField(max_digits=19, decimal_places=4, null=True)
 	p_category = models.TextField(null=True)
@@ -82,7 +82,7 @@ class Fin_Transactions(models.Model):
 	date_updated = models.DateTimeField(auto_now=True)
 
 	class Meta:
-		unique_together = ("item_accounts_id", "p_transaction_id")
+		unique_together = ("account_id", "p_transaction_id")
 		db_table = "fin_transactions"
 
 	def get_category(self):

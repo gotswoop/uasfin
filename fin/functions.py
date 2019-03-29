@@ -1,45 +1,50 @@
-#import base64
-#import os
-from datetime import datetime, timedelta
+# import base64
+# import os
+# import time
 import plaid
 import json
-#import time
+import logging
 
 from django.shortcuts import render
-from .models import Fin_Items, Fin_Accounts, Fin_Transactions, Plaid_Link_Logs, Plaid_Webhook_Logs, User_Actions, Users_With_Linked_Institutions
-from django.conf import settings
-from django.contrib import messages
-import logging
 from django.core import serializers
 from django.db import IntegrityError
+from django.conf import settings
+from django.contrib import messages
+
+from datetime import datetime, timedelta
+
+from fin.models import Fin_Items, Fin_Accounts, Fin_Transactions, Plaid_Link_Logs, Plaid_Webhook_Logs, User_Actions, Users_With_Linked_Institutions
 
 # ------------------------------------------------------------------
-# DEBUG: PRETTY PRINT RESPONSE
-# ------------------------------------------------------------------
-def pretty_print_response(response):
-	print(json.dumps(response, indent=2, sort_keys=True))
-
-# ------------------------------------------------------------------
-# Fetch Transactions for an item
+# Fetch Transactions for an item from PLAID
 # ------------------------------------------------------------------
 def fetch_transactions_from_plaid(client, item, logger):
   
-	# Pull transactions for the last 1460 days (4 years)
+	# Pull 300 (default) transactions for the last 1460 days (4 years)
 	start_date = '{:%Y-%m-%d}'.format(datetime.now() + timedelta(days=-1460))
 	end_date = '{:%Y-%m-%d}'.format(datetime.now())
-	count = 300
+	count = remaining_transactions = 300
 	offset = 0
 	first_iteration = True
 	
 	while True:
 
+		# DEBUG
+		# print('Fetching / Remaining / Offset: ' + str(count) + '/' + str(remaining_transactions) + '/' + str(offset))
+		
 		try:
 			transactions_response = client.Transactions.get(item.p_access_token, start_date, end_date, {'count':count, 'offset':offset})
 		except plaid.errors.PlaidError as e:
-			return format_error(e)
+			logger.debug('# ERROR: Plaid Error @ client.Transactions.get. Access token = ' + str(item.p_access_token) + '. Details' + format(e))
+			break
 
-		offset = offset + count - 1
-
+		incoming_transactions = transactions_response.get('total_transactions', 0)
+		# DEBUG
+		# print('INCOMING ACTUAL: ' + str(incoming_transactions))
+		remaining_transactions = remaining_transactions - count
+		# Setting offset for pagination
+		offset = offset + count
+		
 		# Processing Transactions
 		for transaction in transactions_response.get('transactions'):
 		
@@ -57,13 +62,13 @@ def fetch_transactions_from_plaid(client, item, logger):
   
 		if first_iteration:
   			
-			remaining_transactions = transactions_response.get('total_transactions', 0) - count
+			remaining_transactions = incoming_transactions - count
 			first_iteration = False
 
-			# Updating account balances 
+			# Updating account balances (Once and done)
 			for account in transactions_response.get('accounts'):
 				try:
-					fin_account = Fin_Accounts.objects.get(p_account_id = account.get('account_id'), items_id = item)
+					fin_account = Fin_Accounts.objects.get(p_account_id = account.get('account_id'), item_id = item)
 				except Fin_Accounts.DoesNotExist:
 					logger.debug('# ERROR: Cannot find the account_id to update. ' + account.get('account_id'))
 
@@ -72,18 +77,16 @@ def fetch_transactions_from_plaid(client, item, logger):
 				fin_account.p_balances_limit = account.get('balances').get('limit')
 				fin_account.account_refresh_date = datetime.now()
 				fin_account.save(update_fields=['p_balances_available','p_balances_current','p_balances_limit','account_refresh_date'])
-		else:
-
-			remaining_transactions = remaining_transactions - count
-
-		# Exiting when noting left to fetch
-		if remaining_transactions < 0:
+		
+		# Exiting when nothing left to fetch from plaid
+		if remaining_transactions < 1:
 			break
-
-		# print("REMAINING / count / offset: " + str(remaining_transactions) + '/' + str(count) + '/' + str(offset))
 
 	return None
 
+# ------------------------------------------------------------------
+# Inserting webhook activity from Plaid into db
+# ------------------------------------------------------------------
 def log_incoming_webhook(incoming, remote_ip):
 
 	if incoming.get('error') is None:
@@ -91,26 +94,52 @@ def log_incoming_webhook(incoming, remote_ip):
 	else:
 		_error = json.dumps(incoming.get('error'))
 
-	# TODO: error handling
-	new_plaid_webhook_log = Plaid_Webhook_Logs.objects.create(
-		remote_ip = remote_ip,
-		p_webhook_type = incoming.get('webhook_type'),
-		p_webhook_code = incoming.get('webhook_code'),
-		p_item_id  = incoming.get('item_id'),
-		p_error = _error,
-		p_new_transactions = incoming.get('new_transactions'),
-		p_removed_transactions = incoming.get('removed_transactions'),
-		p_raw_payload = json.dumps(incoming)
-	)
+	try:
+		new_plaid_webhook_log = Plaid_Webhook_Logs.objects.create(
+			remote_ip = remote_ip,
+			p_webhook_type = incoming.get('webhook_type'),
+			p_webhook_code = incoming.get('webhook_code'),
+			p_item_id  = incoming.get('item_id'),
+			p_error = _error,
+			p_new_transactions = incoming.get('new_transactions'),
+			p_removed_transactions = incoming.get('removed_transactions'),
+			p_raw_payload = json.dumps(incoming)
+		)
+	except IntegrityError as e:
+		logger.debug('# ERROR - Plaid_Webhook_Log insert: ' + e.args)
 
 	return None
 
+# ------------------------------------------------------------------
+# Logging user actions 
+# ------------------------------------------------------------------
+def log_user_actions(request, action, institution_id, institution_name, error_code = None, error_message = None, p_link_session_id = None):
+
+	try:
+		User_Actions.objects.create(
+			user_id = request.user,
+			user_ip = request.META['REMOTE_ADDR'],
+			action = action,
+			institution_id = institution_id,
+			institution_name = institution_name,
+			error_code = error_code,
+			error_message = error_message,
+			p_link_session_id = p_link_session_id
+		)
+	except IntegrityError as e:
+		logger.debug('# ERROR - user_actions insert: ' + e.args)
+
+	return None
+
+# ------------------------------------------------------------------
+# Inserting transactions fetched from Plaid into db
+# Assumes old transactions are never updated
+# ------------------------------------------------------------------
 def insert_transaction(fin_accounts_obj, transaction):
 
 	try:
-		transaction, created = Fin_Transactions.objects.get_or_create(p_transaction_id = transaction['transaction_id'], item_accounts_id = fin_accounts_obj, 
+		transaction, created = Fin_Transactions.objects.get_or_create(p_transaction_id = transaction.get('transaction_id'), account_id = fin_accounts_obj, 
 		defaults={
-			'item_accounts_id': fin_accounts_obj,
 			'p_account_owner': transaction.get('account_owner'),
 			'p_amount': transaction.get('amount'),
 			'p_category': transaction.get('category'),
@@ -124,7 +153,7 @@ def insert_transaction(fin_accounts_obj, transaction):
 			'p_location_state': transaction.get('location').get('state'),
 			'p_location_store_number': transaction.get('location').get('store_number'),
 			'p_location_zip': transaction.get('location').get('zip'),
-			'p_name': transaction.get('name'), # TODO: Handle UTC 
+			'p_name': transaction.get('name'),
 			'p_payment_meta_by_order_of': transaction.get('payment_meta').get('by_order_of'),
 			'p_payment_meta_payee': transaction.get('payment_meta').get('payee'),
 			'p_payment_meta_payer': transaction.get('payment_meta').get('payer'),
@@ -135,23 +164,29 @@ def insert_transaction(fin_accounts_obj, transaction):
 			'p_payment_meta_reference_number': transaction.get('payment_meta').get('reference_number'),
 			'p_pending': transaction.get('pending'),
 			'p_pending_transaction_id': transaction.get('pending_transaction_id'),
-			'p_transaction_id': transaction.get('transaction_id'),
 			'p_transaction_type': transaction.get('transaction_type'),
 			'p_unofficial_currency_code': transaction.get('unofficial_currency_code')
 			},
 		)
 	except IntegrityError as e:
-		logger.debug('# ERROR - Transaction Insert: ' + e.args)
+		logger.debug('# ERROR - Transaction insert: ' + e.args)
 		return None
 
+	# DEBUG
+	'''
 	if created:
 		print('# Inserted transaction ' + transaction.p_transaction_id)
 	else:
 		print('# Duplicate ' + transaction.p_transaction_id)
-
+	'''
 	return created
+
 # ------------------------------------------------------------------
-# Remove item (TESTING ONLY)
+# DEBUG
 # ------------------------------------------------------------------
 def format_error(e):
 	return {'error': {'display_message': e.display_message, 'error_code': e.code, 'error_type': e.type, 'error_message': e.message } }
+
+def pretty_print_response(response):
+	print(json.dumps(response, indent=2, sort_keys=True))
+

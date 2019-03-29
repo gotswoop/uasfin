@@ -5,40 +5,44 @@
 
 <ol class="breadcrumb">
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
-  <li class="breadcrumb-item"><a href="{% url 'account_details' item_id=account.items_id.pk %}">{{ account.items_id.p_item_name }}</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'account_details' item_id=account.item_id.pk %}">{{ account.item_id.p_item_name }}</a></li>
   <li class="breadcrumb-item active">{{ account.p_name }} </li>
 </ol>
 
 <div class="card border border-success bg-light">
 	<div class="card-header">
 		<div class="float-left">
-      		<h6>Transactions for: </a></h6>
-      		<h3 class="text-info">{{ account.p_name }} ({{ account.items_id.p_item_name}})</h3>
+      		<h6>Transactions for:</h6>
+      		<h3 class="text-info mt-3 mb-3">{{ account.p_name }} ({{ account.item_id.p_item_name}})</h3>
 			<p>
 				<strong>Details: </strong>{{ account.p_official_name }}<br/>
 				<strong>Type: </strong>{{ account.p_subtype|title }}<br/>
-				<strong>Balance: </strong>${{ account.p_balances_current|floatformat:2|intcomma }}<br/>
-				<strong>Last Updated: </strong>{{ account.account_refresh_date|naturaltime|default_if_none:"<span class='text-danger'>Pending Refresh</span>" }}
+				<strong>Balance: </strong>${{ account.p_balances_current|floatformat:2|intcomma }}<br/><br/>
+				{% if account.account_refresh_date %}
+					<span class='text-muted'>Refreshed {{ account.account_refresh_date|naturaltime }}</span>
+				{% else %}
+					<span class='text-muted'>Transaction Refresh Pending</span>
+				{% endif %}
 			</p>
 		</div>
 	</div>
 	<div class="card-body bg-white">
 		{% if transactions|length == 0%}
 			<p class="ml-2 pb-2"><small>No transactions to show.</small></p>
-			<p><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.items_id.pk %}">Back to {{ account.items_id.p_item_name }}</a></p>
+			<p><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.item_id.pk %}">Back to {{ account.item_id.p_item_name }}</a></p>
 		{% else %}
 			<div class="table-responsive">
 				<table class="table table-sm table-hover table-bordered bg-white">
 					<caption>
-						<p><small> * Showing last 6 months of transactions</small></p>
-						<p><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.items_id.pk %}">Back to {{ account.items_id.p_item_name }}</a></p>
+						<p><small> * Showing last 6 months of transactions. Excludes pending transactions.</small></p>
+						<p><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.item_id.pk %}">Back to {{ account.item_id.p_item_name }}</a></p>
 					</caption>
 					<thead class="thead-light"><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr></thead>
 					<tbody>
 						{% for transaction in transactions %}
 						<tr>
 							<td>{{ transaction.p_date|date:"M d" }}</td>
-							<td>{{ transaction.p_name }} {% if transaction.p_pending %}<small>(pending)</small>{% endif %}</td>
+							<td>{{ transaction.p_name }}</td>
 							<td>{{ transaction.get_category|default_if_none:"-" }}</td>
 							{% if transaction.p_amount > 0 %}
 								<td>${{ transaction.p_amount|floatformat:2|intcomma }}</td>

@@ -1,6 +1,7 @@
 {% extends "fin/base.html" %}
 {% load crispy_forms_tags %}
 {% load humanize %}
+{% load static %}
 {% block content %}
 <ol class="breadcrumb">
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
@@ -18,18 +19,40 @@
 	    	<strong>Date Joined:</strong> {{ user.date_joined|date:"M d, Y @ P T" }}<br/><hr/>
 	    	
 	    </p>
-	    {% if accounts %}
 	    <h5>My Activity</h5>
+	    {% if accounts %}
 	    <div class="table-responsive">
 		    <table class="table table-striped">
-		    	<thead><tr><th>#</th><th>Institution</th><th class="d-none d-md-table-cell">Linked On</th><th>Status</th><th class="d-none d-md-table-cell">Refreshed / Deleted</th><th>Action</th></tr></thead>
+		    	<thead><tr><th class="d-none d-md-table-cell">#</th><th>Institution</th><th class="d-none d-md-table-cell">Linked On</th><th>Status</th><th>Unlink Account</th></tr></thead>
 		    	<tbody>
 		    	{% for account in accounts %}
-		    		{% if account.deleted == 1 %}
-		    			<tr><td>{{ forloop.counter }}</td><td>{{ account.p_item_name }}</td><td class="d-none d-md-table-cell">{{ account.date_created|date:"M d, Y" }}</td><td><span class="text-danger">Deleted</span></td><td class="d-none d-md-table-cell">{{ account.deleted_date|naturaltime }}</td><td>-</td></tr>
-	    			{% else %}
-						<tr><td>{{ forloop.counter }}</td><td>{{ account.p_item_name }}</td><td class="d-none d-md-table-cell">{{ account.date_created|date:"M d, Y" }}</td><td>{% if account.inactive == 1 %}<span class="text-danger">Inactive</span>{% else %}<span class="text-success">Active</span>{% endif %}</td><td class="d-none d-md-table-cell">{{ account.item_refresh_date|naturaltime|default_if_none:"Pending Refresh" }}</td><td><a class="btn btn-danger btn-sm" role="button" href="/unlink/{{ account.id }}">Unlink</a></td></tr>
-		    		{% endif %}
+		    		<tr>
+		    			<td class="d-none d-md-table-cell">{{ forloop.counter }}</td>
+		    			<td>{{ account.p_item_name }}</td>
+		    			<td class="d-none d-md-table-cell">{{ account.date_created|date:"M d, Y" }}</td>
+		    			<td class="td-compact">
+		    				{% if account.deleted == 1 %}
+		    					<img src="{% static 'fin/deleted.png' %}" style="height:1.25rem;"/><span class="text-danger ml-1">Deleted</span>
+		    				{% else %}
+		    					{% if account.inactive == 1 %}
+		    						{% if account.inactive_status == "ITEM_LOGIN_REQUIRED" %}
+										<img src="{% static 'fin/warning.gif' %}" style="height:1.25rem;"/><span class="ml-1"><a class="btn btn-warning btn-sm" href="{% url 'account_details' item_id=account.id %}"><strong>Inactive</strong></a></span>
+									{% else %}
+										<img src="{% static 'fin/warning.gif' %}" style="height:1.25rem;"/><span class="ml-1"><a class="btn btn-warning btn-sm" href="{% url 'account_details' item_id=account.id %}"><strong>Error</strong></a></span>
+									{% endif %}
+		    					{% else %}
+		    						<img src="{% static 'fin/ok.png' %}" style="height:1.25rem;"/><span class="text-success ml-1"><strong>Active</strong></span>
+		    					{% endif %}
+		    				{% endif %}
+		    			</td>
+		    			<td>
+		    				{% if account.deleted == 1 %}
+		    					- 
+	    					{% else %}
+		    					<a class="btn btn-danger btn-sm" role="button" href="/unlink/{{ account.id }}">Unlink</a>
+	    					{% endif %}
+		    			</td>
+		    		</tr>
 	    		{% endfor %}
 		    	</tbody>
 		    </table>

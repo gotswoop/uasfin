@@ -1,4 +1,5 @@
 {% extends 'fin/base.html' %}
+{% load static %}
 {% load humanize %}
 {% block content %}
 <div class="row">
@@ -16,26 +17,19 @@
 			</div>
 			<div class="card-body bg-white responsive">
 				<h6>Click on institution name for more details:</h6>
-		        <table class="table bg-white">
-					<tbody>
-						{% for item in items %}
-						{% with cnt=forloop.counter %}
-						<tr>
-							<td style="width: 85%"><a class="btn btn-outline-info btn-md btn-block text-left" href="{% url 'account_details' item_id=item.id %}">{{ cnt }}. {{ item.p_item_name }}</a></td>
+        		{% for item in items %}
+				{% with cnt=forloop.counter %}
+					<div class="row mt-3 mb-3">
+						<div class="col-12">
 							{% if item.inactive %}
-								{% if item.inactive_status == "ITEM_LOGIN_REQUIRED" %}
-									<td><span class="ml-2"><a class="btn btn-sm btn-danger" href="/relink/{{ item.pk }}">Inactive</a></span></td>
-								{% else %}
-									<td><span class="text-danger"><strong>Acct Error</strong></span></td>
-								{% endif %}
+								<a class="btn btn-outline-info btn-lg btn-block text-left" href="{% url 'account_details' item_id=item.id %}"><img src="{% static 'fin/warning.gif' %}" style="height:1.25rem;"/><span class="ml-2">{{ cnt }}. {{ item.p_item_name }}</span></a>
 							{% else %}
-								<td><span class="text-success">Active</span></td>
+								<a class="btn btn-outline-info btn-lg btn-block text-left" href="{% url 'account_details' item_id=item.id %}"><img src="{% static 'fin/ok.png' %}" style="height:1.25rem;"/><span class="ml-2">{{ cnt }}. {{ item.p_item_name }}</span></a>
 							{% endif %}
-						</tr>
-						{% endwith %}
-						{% endfor %}
-					</tbody>
-				</table>
+						</div>
+					</div>
+					{% endwith %}
+				{% endfor %}
 			</div>
 			<div class="card-footer">
 				You have {{ items|length }} financial institution{% ifnotequal items|length 1 %}s{% endifnotequal %} linked. For each additional institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month.

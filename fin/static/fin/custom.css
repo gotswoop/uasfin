@@ -29,3 +29,9 @@ main > .container {
 code {
 	font-size: 80%;
 }
+
+.td-compact
+{
+  white-space:nowrap;
+  vertical-align:top;
+}
