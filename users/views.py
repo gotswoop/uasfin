@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegisterForm
+
 from django.shortcuts import redirect
 from fin.models import Fin_Items
 from django.http import HttpResponse
+
+from users.forms import UserRegisterForm
+from fin.functions import fetch_treatment, error_handler
 
 def register(request):
     if request.user.is_authenticated:
@@ -24,22 +27,27 @@ def register(request):
 @login_required
 def profile(request):
     
-    staff = False
-    if request.user.groups.filter(name='cesr_team').exists():
-    	staff = True
+	staff = False
+	if request.user.groups.filter(name='cesr_team').exists():
+		staff = True
+
+	try:
+		user_institutions = Fin_Items.objects.filter(user_id = request.user).order_by('p_item_name')
+	except Fin_Items.DoesNotExist:
+		user_institutions = None
+
+	treatment = fetch_treatment(request.user.id)
+	if not treatment:
+		return HttpResponse(status=500)
+
+	context = {
+		'title': "Profile",
+		'staff': staff,
+		'treatment': treatment,
+		'accounts': user_institutions,
+	}
     
-    try:
-        user_institutions = Fin_Items.objects.filter(user_id = request.user).order_by('p_item_name')
-    except Fin_Items.DoesNotExist:
-        user_institutions = None
-        
-    context = {
-	    'title': "Profile",
-        'staff': staff,
-        'accounts': user_institutions,
-    }
-    
-    return render(request, 'users/profile.html', context)
+	return render(request, 'users/profile.html', context)
 
 def passwordReset(request):
     if request.user.is_authenticated:

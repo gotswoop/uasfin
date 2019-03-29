@@ -14,11 +14,14 @@ from django.contrib import messages
 from datetime import datetime, timedelta
 
 from fin.models import Fin_Items, Fin_Accounts, Fin_Transactions, Plaid_Link_Logs, Plaid_Webhook_Logs, User_Actions, Users_With_Linked_Institutions
+from users.models import User_Treatments
+
+logger = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------
 # Fetch Transactions for an item from PLAID
 # ------------------------------------------------------------------
-def fetch_transactions_from_plaid(client, item, logger):
+def fetch_transactions_from_plaid(client, item):
   
 	# Pull 300 (default) transactions for the last 1460 days (4 years)
 	start_date = '{:%Y-%m-%d}'.format(datetime.now() + timedelta(days=-1460))
@@ -35,7 +38,8 @@ def fetch_transactions_from_plaid(client, item, logger):
 		try:
 			transactions_response = client.Transactions.get(item.p_access_token, start_date, end_date, {'count':count, 'offset':offset})
 		except plaid.errors.PlaidError as e:
-			logger.debug('# ERROR: Plaid Error @ client.Transactions.get. Access token = ' + str(item.p_access_token) + '. Details' + format(e))
+			msg = '# ERROR: Plaid Error @ client.Transactions.get. Access token = ' + str(item.p_access_token) + '. Details' + format(e)
+			error_handler(msg)
 			break
 
 		incoming_transactions = transactions_response.get('total_transactions', 0)
@@ -58,7 +62,8 @@ def fetch_transactions_from_plaid(client, item, logger):
 			if fin_accounts_obj:
 				new_transaction = insert_transaction(fin_accounts_obj, transaction)
 			else:
-				logger.debug('# ERROR: Cannot find the corresponding account that we are trying to add transactions into Account_id = ' + account_id)
+				msg = '# ERROR: Cannot find the corresponding account that we are trying to add transactions into Account_id = ' + account_id
+				error_handler(msg)
   
 		if first_iteration:
   			
@@ -70,7 +75,8 @@ def fetch_transactions_from_plaid(client, item, logger):
 				try:
 					fin_account = Fin_Accounts.objects.get(p_account_id = account.get('account_id'), item_id = item)
 				except Fin_Accounts.DoesNotExist:
-					logger.debug('# ERROR: Cannot find the account_id to update. ' + account.get('account_id'))
+					msg = '# ERROR: Cannot find the account_id to update. ' + account.get('account_id')
+					error_handler(msg)
 
 				fin_account.p_balances_available = account.get('balances').get('available')
 				fin_account.p_balances_current = account.get('balances').get('current')
@@ -106,7 +112,8 @@ def log_incoming_webhook(incoming, remote_ip):
 			p_raw_payload = json.dumps(incoming)
 		)
 	except IntegrityError as e:
-		logger.debug('# ERROR - Plaid_Webhook_Log insert: ' + e.args)
+		msg = '# ERROR - Plaid_Webhook_Log insert: ' + e.args
+		error_handler(msg)
 
 	return None
 
@@ -127,7 +134,8 @@ def log_user_actions(request, action, institution_id, institution_name, error_co
 			p_link_session_id = p_link_session_id
 		)
 	except IntegrityError as e:
-		logger.debug('# ERROR - user_actions insert: ' + e.args)
+		msg = '# ERROR - user_actions insert: ' + e.args
+		error_handler(msg)
 
 	return None
 
@@ -169,7 +177,8 @@ def insert_transaction(fin_accounts_obj, transaction):
 			},
 		)
 	except IntegrityError as e:
-		logger.debug('# ERROR - Transaction insert: ' + e.args)
+		msg = '# ERROR - Transaction insert: ' + e.args
+		error_handler(msg)
 		return None
 
 	# DEBUG
@@ -180,6 +189,31 @@ def insert_transaction(fin_accounts_obj, transaction):
 		print('# Duplicate ' + transaction.p_transaction_id)
 	'''
 	return created
+
+
+# ------------------------------------------------------------------
+# Fetch user's treatment. Return None if not found
+# ------------------------------------------------------------------
+def fetch_treatment(user_id):
+
+	try:
+		user_treatment = User_Treatments.objects.get(user_id = user_id)
+	except User_Treatments.DoesNotExist:
+		msg = '# ERROR - No treatment found for user_id ' + str(user_id)
+		error_handler(msg)
+		return None
+
+	return user_treatment.treatment
+
+
+def error_handler(msg, error_type="error", fatal=0):
+	if error_type == "debug":
+		logger.debug(msg)
+	else:
+		logger.error(msg)
+
+	# TODO: if fatal == 1?
+	return None
 
 # ------------------------------------------------------------------
 # DEBUG

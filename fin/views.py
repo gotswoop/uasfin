@@ -18,10 +18,10 @@ from django.core import serializers
 from datetime import datetime, timedelta
 
 from fin.models import Fin_Items, Fin_Accounts, Fin_Transactions, Plaid_Link_Logs, Plaid_Webhook_Logs, User_Actions, Users_With_Linked_Institutions
-from fin.functions import pretty_print_response, fetch_transactions_from_plaid, log_incoming_webhook, insert_transaction, format_error, log_user_actions
+from fin.functions import pretty_print_response, fetch_transactions_from_plaid, log_incoming_webhook, insert_transaction, format_error, log_user_actions, fetch_treatment, error_handler
+from users.models import User_Treatments, Treatments
 
 client = plaid.Client(client_id=settings.PLAID_CLIENT_ID, secret=settings.PLAID_SECRET, public_key=settings.PLAID_PUBLIC_KEY, environment=settings.PLAID_ENV, api_version='2018-05-22')
-logger = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------
 # Plaid Link event - onEvent
@@ -102,9 +102,15 @@ def link_account(request):
 
 	# Fetching number of institutions a user has.
 	number_of_items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count()
+
+	treatment = fetch_treatment(request.user.id)
+	if not treatment:
+		return HttpResponse(status=500)
+
 	context = {
 		'title': "Link Institution",
 		'items': number_of_items,
+		'treatment': treatment,
 	}
 	return render(request, 'fin/link_1.html', context)
 
@@ -222,28 +228,33 @@ def plaid_relink_onExit(request):
 @login_required()
 def link_account_result(request):
 
-    referer_url = request.META.get('HTTP_REFERER')
-    check_url = ('https://' if request.is_secure() else 'http://') + request.get_host() + '/link/'
+	referer_url = request.META.get('HTTP_REFERER')
+	check_url = ('https://' if request.is_secure() else 'http://') + request.get_host() + '/link/'
     
-    number_of_items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count()
+	number_of_items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count()
     
-    recent_action = User_Actions.objects.filter(user_id = request.user, action__in=["link_item", "link_exit", "relink_item"]).order_by('-date_created').first()
+	recent_action = User_Actions.objects.filter(user_id = request.user, action__in=["link_item", "link_exit", "relink_item"]).order_by('-date_created').first()
     
-    first_timer = 1
-    if Users_With_Linked_Institutions.objects.filter(user_id = request.user).count():
-    	first_timer = 0
+	first_timer = 1
+	if Users_With_Linked_Institutions.objects.filter(user_id = request.user).count():
+		first_timer = 0
 
-    # Redirect to dashboard if there are no items OR there were no recent actions.
-    if recent_action == None and number_of_items == 0:
-    	return redirect('home')
+	# Redirect to dashboard if there are no items OR there were no recent actions.
+	if recent_action == None and number_of_items == 0:
+		return redirect('home')
     
-    context = {
-	    'title': 'Link Account - Result',
-	    'items': number_of_items,
-        'recent_action': recent_action,
-        'first_timer': first_timer
-    }
-    return render(request, 'fin/link_2_result.html', context)
+	treatment = fetch_treatment(request.user.id)
+	if not treatment:
+		return HttpResponse(status=500)
+
+	context = {
+		'title': 'Link Account - Result',
+		'items': number_of_items,
+		'recent_action': recent_action,
+		'first_timer': first_timer,
+		'treatment': treatment,
+	}
+	return render(request, 'fin/link_2_result.html', context)
     
 
 # ------------------------------------------------------------------
@@ -282,7 +293,8 @@ def link_account_thankyou(request):
     
     context = {'title': 'Link Account - Thank You'}
     return render(request, 'fin/link_4_thankyou.html')
-   
+
+
 # ------------------------------------------------------------------
 # Site home / dashboard
 # ------------------------------------------------------------------
@@ -290,10 +302,15 @@ def link_account_thankyou(request):
 def home(request):
 
 	items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).order_by('p_item_name')
-  
+
+	treatment = fetch_treatment(request.user.id)
+	if not treatment:
+		return HttpResponse(status=500)
+
 	context = {
 		'title': "Dashboard",
-		'items': items
+		'items': items,
+		'treatment': treatment,
 	}
 
 	if items:
@@ -323,18 +340,21 @@ def plaid_link_onSuccess(request):
 	try:
 		exchange_response = client.Item.public_token.exchange(public_token)
 	except plaid.errors.PlaidError as e:
-		logger.debug('# ERROR: Plaid Error @ client.Item.public_token.exchange = ' + str(public_token) + '. Details' + format(e))
+		msg = '# ERROR: Plaid Error @ client.Item.public_token.exchange = ' + str(public_token) + '. Details' + format(e)
+		error_handler(msg)
 		return HttpResponse(status=500)
 
 	access_token = exchange_response.get('access_token') 
 	# TODO - Log to plaid_api_logs
-	# logger.debug('New item 1 of 4: ' + json.dumps(exchange_response))
+	# msg = 'New item 1 of 4: ' + json.dumps(exchange_response)
+	# error_handler(msg)
 
 	# Fetch item info using token
 	try:
 		item_response = client.Item.get(access_token)
 	except plaid.errors.PlaidError as e:
-		logger.debug('# ERROR: Plaid Error @ client.Item.get = ' + str(access_token) + '. Details' + format(e))
+		msg = '# ERROR: Plaid Error @ client.Item.get = ' + str(access_token) + '. Details' + format(e)
+		error_handler(msg)
 		return HttpResponse(status=500)
 	
 	# TODO - Log to plaid_api_logs -  json.dumps(item_response))
@@ -343,7 +363,8 @@ def plaid_link_onSuccess(request):
 	try:
 		institution_response = client.Institutions.get_by_id(item_response.get('item').get('institution_id'))
 	except plaid.errors.PlaidError as e:
-		logger.debug('# ERROR: Plaid Error @ client.Institutions.get_by_id = ' + str(item_response.get('item').get('institution_id')) + '. Details' + format(e))
+		msg = '# ERROR: Plaid Error @ client.Institutions.get_by_id = ' + str(item_response.get('item').get('institution_id')) + '. Details' + format(e)
+		error_handler(msg)
 		return HttpResponse(status=500)
 	
 	# TODO: log to database - json.dumps(institution_response))
@@ -357,7 +378,8 @@ def plaid_link_onSuccess(request):
 			},
 		)
 	except IntegrityError as e:
-		logger.debug('# ERROR - fin_items insert/lookup: ' + e.args)
+		msg = '# ERROR - fin_items insert/lookup: ' + e.args
+		error_handler(msg)
 		return HttpResponse(status=500)
 	
 	if item_created is False:
@@ -383,12 +405,14 @@ def plaid_link_onSuccess(request):
 		try:
 			accounts_response = client.Accounts.get(access_token)
 		except plaid.errors.PlaidError as e:
-			logger.debug('# ERROR: Plaid Error @ client.Accounts.get = ' + str(access_token) + '. Details' + format(e))
+			msg = '# ERROR: Plaid Error @ client.Accounts.get = ' + str(access_token) + '. Details' + format(e)
+			error_handler(msg)
 			return HttpResponse(status=500)
   
 		if accounts_response:
 			if accounts_response.get('item').get('error') is not None:
-				logger.error('Could not find accounts for item_id ' + fin_item.id)
+				msg = 'Could not find accounts for item_id ' + fin_item.id
+				error_handler(msg)
 			else:
 				accounts = accounts_response.get('accounts')
 				for account in accounts:
@@ -427,7 +451,8 @@ def webhook(request):
 
 	# TODO: Only handling webhook_type of TRANSCTIONS and ITEM. item_id for other type of webhooks
 	if webhook_type not in ["TRANSACTIONS", "ITEM"]:
-		logger.debug('# TODO - Webhook. Type not yet handled. ' + webhook_type)
+		msg = '# TODO - Webhook. Type not yet handled. ' + webhook_type
+		error_handler(msg)
 		return HttpResponse(status=200)
 	
 	
@@ -436,7 +461,8 @@ def webhook(request):
 	try:	
 		item = Fin_Items.objects.exclude(deleted = 1).get(p_item_id = item_id)
 	except Fin_Items.DoesNotExist:
-		logger.debug('# WARN - Webhook. No corresponding item_id in fin_items table. ' + json.dumps(incoming))
+		msg ='# WARN - Webhook. No corresponding item_id in fin_items table. ' + json.dumps(incoming)
+		error_handler(msg)
 		return HttpResponse(status=200)
 	
 	# TODO: Check other webhook_types and only if ERROR is NONE
@@ -446,7 +472,7 @@ def webhook(request):
 
 		if webhook_code in ["INITIAL_UPDATE", "HISTORICAL_UPDATE", "DEFAULT_UPDATE"]:
 			# Fetching Transactions
-			response = fetch_transactions_from_plaid(client, item, logger)
+			response = fetch_transactions_from_plaid(client, item)
 		elif webhook_code == "TRANSACTIONS_REMOVED":
 			# Removing Transactions
 			transaction_ids_to_remove = incoming.get('removed_transactions')
@@ -455,14 +481,16 @@ def webhook(request):
 				response = "TRANSACTION_REMOVE_NOT_OK"
 		else:
 			# Unhandled cases
-			logger.debug('# ERROR - Webook (TRANSACTIONS). Should not be in here. ' + webhook_code + ' - ' + str(item_id))
+			msg = '# ERROR - Webook (TRANSACTIONS). Should not be in here. ' + webhook_code + ' - ' + str(item_id)
+			error_handler(msg)
 
 		# Setting the fin_items.item_refresh_date to now
 		if response == None:
 			item.item_refresh_date = datetime.now()
 			item.save(update_fields=['item_refresh_date'])
 		else:
-			logger.debug('# ERROR - Webook (TRANSACTIONS) Webook Code' + webhook_code + ' Item id ' + str(item_id)  + ' Details:' + response)
+			msg = '# ERROR - Webook (TRANSACTIONS) Webook Code' + webhook_code + ' Item id ' + str(item_id)  + ' Details:' + response
+			error_handler(msg)
 			return response
 
 	elif webhook_type == "ITEM":
@@ -473,10 +501,12 @@ def webhook(request):
 			item.inactive_status = incoming.get('error').get('error_code')
 			item.save(update_fields=['inactive', 'inactive_date','inactive_status'])
 		elif webhook_code == "WEBHOOK_UPDATE_ACKNOWLEDGED":                
-			logger.debug('# TODO - Webhook (ITEM). Webook update acknowleded ' + webhook_code + ' - ' + str(item_id))
+			msg = '# TODO - Webhook (ITEM). Webook update acknowleded ' + webhook_code + ' - ' + str(item_id)
+			error_handler(msg)
 		else:
 			# Unhandled cases
-			logger.debug('# ERROR - Webook (ITEM). Should not be in here. ' + webhook_code + ' - ' + str(item_id))
+			msg = '# ERROR - Webook (ITEM). Should not be in here. ' + webhook_code + ' - ' + str(item_id)
+			error_handler(msg)
 
 	return HttpResponse(status=200)
 
@@ -624,10 +654,15 @@ def unlink_account(request, item_id):
 		
 		number_of_items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count()
 
+		treatment = fetch_treatment(request.user.id)
+		if not treatment:
+			return HttpResponse(status=500)
+	
 		context = {
 			'item_id': item.pk,
 			'items': number_of_items,
-			'institution_name': item.p_item_name
+			'institution_name': item.p_item_name,
+			'treatment': treatment,
 		}
 		return render(request, 'fin/unlink_warning.html', context)
     	

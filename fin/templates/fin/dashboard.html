@@ -32,7 +32,7 @@
 				{% endfor %}
 			</div>
 			<div class="card-footer">
-				You have {{ items|length }} financial institution{% ifnotequal items|length 1 %}s{% endifnotequal %} linked. For each additional institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month.
+				You have {{ items|length }} financial institution{% ifnotequal items|length 1 %}s{% endifnotequal %} linked. For each additional institution you link, you will earn a reward of ${{ treatment.reward_link }} right now, plus a reward of ${{ treatment.reward_monthly }} every month.
 			</div>
 		</div>
 		<br/><br/>
@@ -41,7 +41,7 @@
 		<div class="card">
 			<div class="card-header bg-success text-white">
 				<h6>Number of Institutions Linked: {{ items|length }}</h6>
-				<h6>Monthly Rewards Earnings: ${% widthratio 5 1 items|length %}</h6></div>
+				<h6>Monthly Rewards Earnings: {{ items|length }} x ${{treatment.reward_monthly}} = ${% widthratio treatment.reward_monthly 1 items|length %}</h6></div>
 		 </div>
 		<div class="card mt-2">
 		  <div class="card-body border border-success">

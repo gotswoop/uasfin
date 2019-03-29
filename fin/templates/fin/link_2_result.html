@@ -8,34 +8,34 @@
 				{% if recent_action.error_code == None %}
 		  			{% if recent_action.action == "relink_item" %}
 		  				<h4 id="success_summary" class="card-title text-success">Your account was successfully re-linked to UASFin!</h4>
-			  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
+			  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }} right now, plus a reward of ${{ treatment.reward_monthly }} every month</p>
 		  			{% else %}
 		  				<h4 id="success_summary" class="card-title text-success"><strong>{{ recent_action.institution_name }}</strong> was successfully linked to UASFin!</h4>
-			  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
+			  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }} right now, plus a reward of ${{ treatment.reward_monthly }} every month</p>
 		  			{% endif %}
 
 		  		{% elif recent_action.error_code == "DUPLICATE_INSTITUTION_PREVIOUSLY_DELETED" %}
 
 	  				<h4 id="failure_summary" class="card-title text-danger"><strong> {{ recent_action.institution_name }} </strong> was previously linked and removed</h4>
 	  				<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Would%20like%20to%20re-link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you would like to re-link <strong>{{ recent_action.institution_name }}</strong>.</p>
-  					<p class="card-text pt-2">Would you like to link a different institution?<br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
+  					<p class="card-text pt-2">Would you like to link a different institution?<br/><br/>For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }} right now, plus a reward of ${{ treatment.reward_monthly }} every month</p>
 
 		  		{% elif recent_action.error_code == "DUPLICATE_INSTITUTION" %}
 		  			
 		  			<h4 id="failure_summary" class="card-title text-danger"><strong> {{ recent_action.institution_name }} </strong> was previously linked</h4>
-  					<p class="card-text pt-2">Would you like to link a different institution?<br/><br/>For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month</p>
+  					<p class="card-text pt-2">Would you like to link a different institution?<br/><br/>For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }} right now, plus a reward of ${{ treatment.reward_monthly }} every month</p>
 
 		  		{% elif recent_action.error_code == "USER_EXITED_PLAID_LINK" %}
 		  			
 		  			<h4 id="failure_summary" class="card-title text-info"><strong>You quit the account linking process</strong></h4>
   					<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Unable%20to%20link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you are experiencing issues with finding or linking your institution.</p>
-  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month.<br/><br/>Would like to try again?</p>
+  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }} right now, plus a reward of ${{ treatment.reward_monthly }} every month.<br/><br/>Would like to try again?</p>
 
 		  		{% elif recent_action.error_code == "INVALID_CREDENTIALS" %}
 		  			
 		  			<h4 id="failure_summary" class="card-title text-danger">The credentials for your <strong>{{ recent_action.institution_name }}</strong> account were incorrect</h4>
   					<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Unable%20to%20link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you are experiencing issues linking your <strong>{{ recent_action.institution_name }}</strong> account.</p>
-  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month.<br/><br/>Would like to try linking <strong>{{ recent_action.institution_name }}</strong> again?</p>
+  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }} right now, plus a reward of ${{ treatment.reward_monthly }} every month.<br/><br/>Would like to try linking <strong>{{ recent_action.institution_name }}</strong> again?</p>
 
 		  		{% endif %}
 		  	</div>
@@ -58,7 +58,7 @@
 		<div class="card">
 			<div class="card-header bg-success text-white">
 				<h6>Number of Institutions Linked: {{ items }}</h6>
-				<h6>Monthly Rewards Earnings: ${% widthratio 5 1 items %}</h6></div>
+				<h6>Monthly Rewards Earnings: {{ items }} x ${{treatment.reward_monthly}} = ${% widthratio treatment.reward_monthly 1 items %}</h6></div>
 		 </div>
 		<div class="card mt-2">
 		  <div class="card-body border border-success">

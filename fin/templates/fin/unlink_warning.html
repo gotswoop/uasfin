@@ -29,7 +29,7 @@
 		<div class="card">
 			<div class="card-header bg-success text-white">
 				<h6>Number of Institutions Linked: {{ items }}</h6>
-				<h6>Monthly Rewards Earnings: ${% widthratio 5 1 items %}</h6></div>
+				<h6>Monthly Rewards Earnings: {{ items }} x ${{treatment.reward_monthly}} = ${% widthratio treatment.reward_monthly 1 items %}</h6></div>
 		 </div>
 		<div class="card mt-2">
 		  <div class="card-body border border-success">

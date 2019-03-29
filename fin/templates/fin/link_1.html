@@ -33,7 +33,7 @@
 				</p>
 			</div>
 			<div class="card-footer">
-				<p>You have {{ items }} institution{% ifnotequal items 1 %}s{% endifnotequal %} linked. For each institution you link, you will earn a reward of $10 right now, plus a reward of $5 every month.</p>
+				<p>You have {{ items }} institution{% ifnotequal items 1 %}s{% endifnotequal %} linked. For each institution you link, you will earn a reward of ${{ treatment.reward_link }} right now, plus a reward of ${{ treatment.reward_monthly }} every month.</p>
 			</div>
 		</div>
 	</div>
