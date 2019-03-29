@@ -1,12 +1,6 @@
 import ast
 from django.db import models
 from django.contrib.auth.models import User
-# from django_mysql.models import JSONField
-
-'''
-def my_default():
-    return {'foo': 'bar'}
-'''
 
 class Fin_Items(models.Model):
 	user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.PROTECT)
