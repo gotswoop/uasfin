@@ -19,7 +19,7 @@ class Treatments(models.Model):
 		db_table = "treatments"
 
 class User_Treatments(models.Model):
-	user_id = models.OneToOneField(User, db_column='user_id', on_delete=models.PROTECT)
+	user_id = models.OneToOneField(User, primary_key=True, db_column='user_id', on_delete=models.PROTECT)
 	treatment = models.ForeignKey(Treatments, db_column='treatment', on_delete=models.PROTECT)
 	
 	class Meta:
