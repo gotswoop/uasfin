@@ -16,16 +16,16 @@
 	<div class="col-md-5">
 		<div class="card mt-5">
 			<div class="card-header">
-				<h5><span class="text-success">Institution Linking Process</span></h5>
+				<h5><span class="text-dark">Institution Linking Steps</span></h5>
 			</div>
 			<div class="card-body">
 				<p>
 				<ol>
 					<li>Click "Get Started"</li>
 					<li>
-						Look for your financial institution in the list (you can scroll down for more institutions)
-						<br/>&nbsp;&nbsp;or <br/>
-						search for it using the search box
+						Look for your financial institution in the list <small>(you can scroll down for more institutions)</small>
+						<br/><span class="ml-3">or <br/>
+						Search for it using the search box
 					</li>
 					<li>Click on your financial institution's logo</li>
 					<li>Enter your financial institution's credentials and click "Submit"</li>
@@ -33,7 +33,7 @@
 				</p>
 			</div>
 			<div class="card-footer">
-				<p>You have {{ items }} institution{% ifnotequal items 1 %}s{% endifnotequal %} linked. For each institution you link, you will earn a reward of ${{ treatment.reward_link }} right now, plus a reward of ${{ treatment.reward_monthly }} every month.</p>
+				<p>You have {{ items }} institution{% ifnotequal items 1 %}s{% endifnotequal %} linked. For each institution you link, you will earn a reward of ${{ treatment.reward_link }}, plus a reward of ${{ treatment.reward_monthly }} every month that the account remains active.</p>
 			</div>
 		</div>
 	</div>

@@ -3,27 +3,25 @@
 <div id="summary">
 	<div class="card border mb-3">
 	  <div class="card-body">
-	  	<h4 class="card-title">These are the accounts often linked by other survey participants. Please take a look at this list:</h4>
+	  	<h4 class="card-title">These are the accounts often linked by other survey participants:</h4>
 	    <p class="card-text">
 	    	<ul>
 			<li>Checking Accounts</li>
 			<li>Savings Accounts</li>
-			<li>Credit Card Accounts</li>
-			<li>Pre-paid Credit Card</li>
-			<li>Money Market Accounts</li>
-			<li>CD's</li>
+			<li>Credit Cards</li>
+			<li>Prepaid Cards</li>
+			<li>Long-term Savings Accounts</li>
 			<li>Mortgages</li>
 			<li>Home Equity Line of Credit (HELOC)</li>
-			<li>Employer-sponsored retirement accounts (401k, 403(b), and similar)</li> 
-			<li>Investment Retirement Accounts (IRA)</li>
+			<li>Retirement Accounts (401k, 403(b), IRA, and similar)</li> 
 			<li>Brokerage Accounts</li>
 			</ul>
-			Think about all the accounts you have linked. Do you have accounts in other financial institutions you may have forgotten and would like to link?
+			Have you forgotten to link any of your accounts?
 		</p>
 	  </div>
 	</div>
 	<p>
-		<a class="btn btn-lg btn-primary mt-2 mr-3" href="{% url 'link_account' %}" role="button">Link Another Account</a>
+		<a class="btn btn-lg btn-primary mt-2 mr-3" href="{% url 'link_account' %}" role="button">Link Another Institution</a>
 		<a class="btn btn-lg btn-outline-info mt-2" href="{% url 'link_account_thankyou' %}" role="button">No</a>
 	</p>
 </div>

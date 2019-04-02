@@ -6,26 +6,25 @@
 <div id="intro" class="border border border-success p-4	">
 	<h4>Welcome to the UASFin Study!</h4>
 	<hr/>
-	<p>To participate in this study, we are asking you to link your financial accounts to our secure website. This is done through Plaid, a company trusted by millions of consumers to help them manage their spending and saving.</p>
+	<p>To participate in this study, we are asking you to link your financial accounts to our secure website. This is done through Plaid, a company trusted by millions of consumers to help them securely manage their spending and saving.</p>
 
 	<p>The linking process is simple: 
+		<ol>
+		<li>Click on "Link Institution using Plaid"</li>
+		<li>Find your financial institution in the list, or search for it using the search box</li>
+		<li>Click on your financial institution logo</li>
+		<li>Enter your financial institution credentials and click "Submit"</li>
+		</ol>
 
-	<ol>
-	<li>Click on "Link Institution using Plaid"</li>
-	<li>Find your financial institution in the list, or search for it using the search box</li>
-	<li>Click on your financial institution logo</li>
-	<li>Enter your financial institution credentials and click "Submit"</li>
-	</ol>
+		Repeat steps 1-4 for each of your financial institutions. Once your financial institutions are linked, you will see all your accounts in one place.</p>
 
-	Repeat steps 1-4 for each of your financial institutions. Once your financial institutions are linked, you will see all your accounts in one place.</p>
-
-	<p>For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }} right now, plus a reward of ${{ treatment.reward_monthly }} every month (as long as your financial institution remains linked). The green box on the screen tells you the total monthly rewards you have earned as you link institutions.</p>
+	<p>For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }}, plus a reward of ${{ treatment.reward_monthly }} every month that the account remains active. The green box on the dashboard screen tells you the total monthly rewards you have earned as you link institutions.</p>
 
 	<p>Remember, <strong>UAS will NOT have access to your credentials or any other identifying information.</strong></p>
 
 	<p>Your financial information will be kept secure and protected. Plaid will never share your login IDs, passwords, or any other personal information with UAS researchers or anyone else.</p>
 
-	<a class="btn btn-lg btn-primary" href="{% url 'link_account' %}" role="button">Link Account using Plaid</a>
+	<a class="btn btn-lg btn-primary" href="{% url 'link_account' %}" role="button">Link Institution using Plaid</a>
 	<br/>
 </div>
 {% endblock content %}

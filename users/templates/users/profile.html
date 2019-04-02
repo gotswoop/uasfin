@@ -10,7 +10,6 @@
 <div class="intro">
 	<div class="card border-info">
 	  <div class="card-body">
-	  	<p><span class="text-danger"><strong>(DEBUG)</strong> Treatment #{{ treatment.treatment }}. ${{ treatment.reward_link }} for institution linking. ${{ treatment.reward_monthly }} monthly reward.</span></p>
 	    <h3 class="card-title">My Profile</h3>
 	    <p class="card-text">
 	    	{% if staff %} 
@@ -21,46 +20,47 @@
 	    </p>
 	    <h5>My Activity</h5>
 	    {% if accounts %}
-	    <div class="table-responsive">
-		    <table class="table table-striped">
-		    	<thead><tr><th class="d-none d-md-table-cell">#</th><th>Institution</th><th class="d-none d-md-table-cell">Linked On</th><th>Status</th><th>Unlink Account</th></tr></thead>
-		    	<tbody>
-		    	{% for account in accounts %}
-		    		<tr>
-		    			<td class="d-none d-md-table-cell">{{ forloop.counter }}</td>
-		    			<td>{{ account.p_item_name }}</td>
-		    			<td class="d-none d-md-table-cell">{{ account.date_created|date:"M d, Y" }}</td>
-		    			<td class="td-compact">
-		    				{% if account.deleted == 1 %}
-		    					<img src="{% static 'fin/deleted.png' %}" style="height:1.25rem;"/><span class="text-danger ml-1">Deleted</span>
-		    				{% else %}
-		    					{% if account.inactive == 1 %}
-		    						{% if account.inactive_status == "ITEM_LOGIN_REQUIRED" %}
-										<img src="{% static 'fin/warning.gif' %}" style="height:1.25rem;"/><span class="ml-1"><a class="btn btn-warning btn-sm" href="{% url 'account_details' item_id=account.id %}"><strong>Inactive</strong></a></span>
-									{% else %}
-										<img src="{% static 'fin/warning.gif' %}" style="height:1.25rem;"/><span class="ml-1"><a class="btn btn-warning btn-sm" href="{% url 'account_details' item_id=account.id %}"><strong>Error</strong></a></span>
-									{% endif %}
+		    <div class="table-responsive">
+			    <table class="table table-striped">
+			    	<thead><tr><th class="d-none d-md-table-cell">#</th><th>Institution</th><th class="d-none d-md-table-cell">Linked On</th><th>Status</th><th>Unlink Account</th></tr></thead>
+			    	<tbody>
+			    	{% for account in accounts %}
+			    		<tr>
+			    			<td class="d-none d-md-table-cell">{{ forloop.counter }}</td>
+			    			<td>{{ account.p_item_name }}</td>
+			    			<td class="d-none d-md-table-cell">{{ account.date_created|date:"M d, Y" }}</td>
+			    			<td class="td-compact">
+			    				{% if account.deleted == 1 %}
+			    					<img src="{% static 'fin/deleted.png' %}" style="height:1.25rem;"/><span class="text-danger ml-1">Deleted</span>
+			    				{% else %}
+			    					{% if account.inactive == 1 %}
+			    						{% if account.inactive_status == "ITEM_LOGIN_REQUIRED" %}
+											<img src="{% static 'fin/warning.gif' %}" style="height:1.25rem;"/><span class="ml-1"><a class="btn btn-warning btn-sm" href="{% url 'account_details' item_id=account.id %}"><strong>Inactive</strong></a></span>
+										{% else %}
+											<img src="{% static 'fin/warning.gif' %}" style="height:1.25rem;"/><span class="ml-1"><a class="btn btn-warning btn-sm" href="{% url 'account_details' item_id=account.id %}"><strong>Error</strong></a></span>
+										{% endif %}
+			    					{% else %}
+			    						<img src="{% static 'fin/ok.png' %}" style="height:1.25rem;"/><span class="text-success ml-1"><strong>Active</strong></span>
+			    					{% endif %}
+			    				{% endif %}
+			    			</td>
+			    			<td>
+			    				{% if account.deleted == 1 %}
+			    					- 
 		    					{% else %}
-		    						<img src="{% static 'fin/ok.png' %}" style="height:1.25rem;"/><span class="text-success ml-1"><strong>Active</strong></span>
+			    					<a class="btn btn-danger btn-sm" role="button" href="/unlink/{{ account.id }}">Unlink</a>
 		    					{% endif %}
-		    				{% endif %}
-		    			</td>
-		    			<td>
-		    				{% if account.deleted == 1 %}
-		    					- 
-	    					{% else %}
-		    					<a class="btn btn-danger btn-sm" role="button" href="/unlink/{{ account.id }}">Unlink</a>
-	    					{% endif %}
-		    			</td>
-		    		</tr>
-	    		{% endfor %}
-		    	</tbody>
-		    </table>
-		</div>
+			    			</td>
+			    		</tr>
+		    		{% endfor %}
+			    	</tbody>
+			    </table>
+			</div>
 	    {% else %}
-	    <div class="alert-warning"><p>Nothing to show. Click <a href="{% url 'link_account' %}"></strong>here</strong></a> to link accounts.</p></div>
+	    	<div class="alert-warning"><p>Nothing to show. Click <a href="{% url 'link_account' %}"></strong>here</strong></a> to link institutions.</p></div>
 	    {% endif %}
 	   </div>
 	</div>
+	<div class="mt-3 alert alert-warning"><p>(DEBUG) Treatment #{{ treatment.treatment }}. <ul><li>${{ treatment.reward_link }} for institution linking. </li><li>${{ treatment.reward_monthly }} monthly reward.</li></ul></p></div>
 </div>
 {% endblock content %}
