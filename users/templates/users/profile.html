@@ -10,13 +10,15 @@
 <div class="intro">
 	<div class="card border-info">
 	  <div class="card-body">
-	    <h3 class="card-title">My Profile</h3>
+	    <h3 class="card-title">{{ user.username }}</h3>
 	    <p class="card-text">
 	    	{% if staff %} 
 				<h6 class="text-success font-weight-bold">CESR Team Member</h6> 
 			{% endif %}
+			<!--
 	    	<strong>Username:</strong> {{ user.username }}<br/>
 	       	<strong>Date Joined:</strong> {{ user.date_joined|date:"M d, Y @ P T" }}<br/><hr/>
+	       	-->
 	    </p>
 	    <h5>My Activity</h5>
 	    {% if accounts %}
@@ -61,6 +63,5 @@
 	    {% endif %}
 	   </div>
 	</div>
-	<div class="mt-3 alert alert-warning"><p>(DEBUG) Treatment #{{ treatment.treatment }}. <ul><li>${{ treatment.reward_link }} for institution linking. </li><li>${{ treatment.reward_monthly }} monthly reward.</li></ul></p></div>
 </div>
 {% endblock content %}

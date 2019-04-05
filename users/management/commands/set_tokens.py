@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
@@ -8,22 +8,26 @@ from django.contrib.auth.tokens import default_token_generator
 from users.models import Password_Reset_Links
 
 class Command(BaseCommand):
-    help = 'Set or update user\'s password reset token'
+	help = 'Set or update user\'s password reset token'
 
-    def add_arguments(self, parser):
-        parser.add_argument('user_id', type=int, help='The user_id for which you want to reset the password reset token')
+	def add_arguments(self, parser):
+		parser.add_argument('username', type=str, help='The username for which you want to reset the password reset token')
 
-    def handle(self, *args, **kwargs):
-        user_id = kwargs['user_id']
-        self.stdout.write("User_id: %s" % user_id)
-        user = User.objects.get(id = user_id)
-        self.stdout.write("Email: %s" % user.email)
-        url = 'http://127.0.0.1:8000/password-reset-confirm/'
-        token = url + urlsafe_base64_encode(force_bytes(user.pk)).decode() + '/' + default_token_generator.make_token(user) + '/'
-        updated_item, new_item = Password_Reset_Links.objects.update_or_create(
-            user_id = user, username = user.username, defaults={"reset_token": token}
-        )
-        self.stdout.write("Email: %s" % token)
+	def handle(self, *args, **kwargs):
+		username = kwargs['username']
+		try:
+			user = User.objects.get(username = username)
+		except User.DoesNotExist:
+			raise CommandError('Username "%s" does not exist' % username)
+
+		url = '/password-reset-confirm/'
+		token = url + urlsafe_base64_encode(force_bytes(user.pk)) + '/' + default_token_generator.make_token(user) + '/'
+		updated_item, new_item = Password_Reset_Links.objects.update_or_create(
+		    user_id = user, username = user.username, defaults={"reset_token": token}
+		)
+		# self.stdout.write("Email: %s" % user.email)
+		self.stdout.write("Username: %s" % username)
+		self.stdout.write("Token: %s" % token)
 
 
 '''

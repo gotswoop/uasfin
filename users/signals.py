@@ -16,8 +16,9 @@ def sig_user_logged_in(sender, user, request, **kwargs):
     # logger = logging.getLogger(__name__)
     # logger.info("user logged in: %s at %s" % (user, request.META['REMOTE_ADDR']))
     # Updating the user_password_reset_link table 
-    url = ('https://' if request.is_secure() else 'http://') + request.get_host() + '/password-reset-confirm/'
-    token = url + urlsafe_base64_encode(force_bytes(user.pk)).decode() + '/' + default_token_generator.make_token(user) + '/'
+    # url = ('https://' if request.is_secure() else 'http://') + request.get_host() + '/password-reset-confirm/'
+    url = '/password-reset-confirm/'
+    token = url + urlsafe_base64_encode(force_bytes(user.pk)) + '/' + default_token_generator.make_token(user) + '/'
     updated_item, new_item = Password_Reset_Links.objects.update_or_create(
         user_id = user, username = user.username, defaults={"reset_token": token}
     )
