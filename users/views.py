@@ -27,9 +27,9 @@ def register(request):
 @login_required
 def profile(request):
     
-	staff = False
+	internal_staff = False
 	if request.user.groups.filter(name='cesr_team').exists():
-		staff = True
+		internal_staff = True
 
 	try:
 		user_institutions = Fin_Items.objects.filter(user_id = request.user).order_by('p_item_name')
@@ -42,7 +42,7 @@ def profile(request):
 
 	context = {
 		'title': "Profile",
-		'staff': staff,
+		'internal_staff': internal_staff,
 		'treatment': treatment,
 		'accounts': user_institutions,
 	}

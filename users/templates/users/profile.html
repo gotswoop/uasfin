@@ -12,8 +12,9 @@
 	  <div class="card-body">
 	    <h3 class="card-title">{{ user.username }}</h3>
 	    <p class="card-text">
-	    	{% if staff %} 
-				<h6 class="text-success font-weight-bold">CESR Team Member</h6> 
+			{% if internal_staff %} 
+				<h6 class="text-success font-weight-bold">CESR Team Member</h6>
+				<a class="btn btn-sm btn-warning" href="{% url 'panel_home' %}" role="button">Metrics Dashboard</a>
 			{% endif %}
 			<!--
 	    	<strong>Username:</strong> {{ user.username }}<br/>

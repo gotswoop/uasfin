@@ -1,0 +1,227 @@
+{% extends "fin/base.html" %}
+{% block content %}
+{% load panel_custom_filters %}
+<div class="content-section">
+	<h2>UASFin Partipation Summary</h2>
+	<hr/>
+	<ul class="nav nav-tabs" id="myTab" role="tablist">
+		<li class="nav-item">
+		    <a class="nav-link active" id="tab-active" data-toggle="tab" href="#active" role="tab" aria-controls="active" aria-selected="true">Active ({{ counts.active }})</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" id="tab-inactive" data-toggle="tab" href="#inactive" role="tab" aria-controls="inactive" aria-selected="false">Inactive</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" id="tab-noresponse" data-toggle="tab" href="#noresponse" role="tab" aria-controls="noresponse" aria-selected="false">No Response</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" id="tab-noconsent" data-toggle="tab" href="#noconsent" role="tab" aria-controls="noconsent" aria-selected="false">No Consent</a>
+		</li>
+	</ul>
+	<div class="tab-content mt-5" id="myTabContent">
+
+		<!-- Active tab -->
+		<div class="tab-pane fade show active" id="active" role="tabpanel" aria-labelledby="tab-active">
+			<h3>Active Participants ({{ counts.active }})</h3>
+			<p>
+				<ul>
+					<li>Consent: <span class="text-success">Yes</span></li>
+					<li>Logged In: <span class="text-success">Yes</span></li>
+					<li>Institution Linked: <span class="text-success">Yes</span></li>
+				</ul>
+			</p>
+
+			<hr/>
+			<h5>UAS Panel Members:</h5>
+			<table class="table table-sm table-hover table-bordered bg-white">
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<tbody>
+			{% with 1 as cnt %}
+			{% for user in users %}
+			{% if user.username|is_uas_panel_member == True and user.fin_items_set.count > 0 %}
+				<tr>
+		 		<td>{{ cnt }}</td>
+		 		<td>{{ user.username}}</td>
+		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.fin_items_set.count }} / {{ user.fin_items_set.count }}</td>
+		 		<td>{{ user.last_login|default:"" }}</td>
+		 		<td>{{ user.user_treatments }}</td>
+		 		</tr>
+		 		{% ++ cnt %}
+			{% endif %}
+		 	{% endfor %}
+		 	{% endwith %}
+		 	</tbody>
+			</table>
+			<br/>
+			<h5>CESR, CFSI & Test Users:</h5>
+			<table class="table table-sm table-hover table-bordered bg-white">
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<tbody>
+			{% with 1 as cnt %}
+			{% for user in users %}
+			{% if user.username|is_uas_panel_member == False and user.fin_items_set.count > 0 %}
+				<tr>
+				<td>{{ cnt }}</td>
+				<td>{{ user.username}}</td>
+		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.fin_items_set.count }} / {{ user.fin_items_set.count }}</td>
+		 		<td>{{ user.last_login|default:"" }}</td>
+		 		<td>{{ user.user_treatments }}</td>
+			 	</tr>
+			 	{% ++ cnt %}
+			 {% endif %}
+		 	{% endfor %}
+		 	{% endwith %}
+		 	</tbody>
+			</table>
+		</div>
+
+		<!-- Inactive tab -->
+		<div class="tab-pane fade" id="inactive" role="tabpanel" aria-labelledby="tab-inactive">
+			<h3>Inactive Participants</h3>
+			<p>
+				<ul>
+					<li>Consent: <span class="text-success">Yes</span></li>
+					<li>Logged In: <span class="text-success">Yes</span></li>
+					<li>Institution Linked: <span class="text-danger">No</span></li>
+				</ul>
+			</p>
+			<hr/>
+			<h5>UAS Panel Members:</h5>
+			<table class="table table-sm table-hover table-bordered bg-white">
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<tbody>
+			{% with 1 as cnt %}
+			{% for user in users %}
+			{% if user.username|is_uas_panel_member == True and user.fin_items_set.count == 0 and user.last_login != None %}
+				<tr>
+				<td>{{ cnt }}</td>
+		 		<td>{{ user.username }}</td>
+		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>-</td>
+		 		<td>{{ user.last_login|default:"" }}</td>
+		 		<td>{{ user.user_treatments }}</td>
+		 		</tr>
+		 		{% ++ cnt %}
+			{% endif %}
+		 	{% endfor %}
+		 	{% endwith %}
+		 	</tbody>
+			</table>
+			<br/>
+			<h5>CESR, CFSI & Test Users:</h5>
+			<table class="table table-sm table-hover table-bordered bg-white">
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<tbody>
+			{% with 1 as cnt %}
+			{% for user in users %}
+			{% if user.username|is_uas_panel_member == False and user.fin_items_set.count == 0 and user.last_login != None %}
+				<tr>
+				<td>{{ cnt }}</td>
+		 		<td>{{ user.username }}</td>
+		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>-</td>
+		 		<td>{{ user.last_login|default:"" }}</td>
+		 		<td>{{ user.user_treatments }}</td>
+			 	</tr>
+			 	{% ++ cnt %}
+			 {% endif %}
+		 	{% endfor %}
+		 	{% endwith %}
+		 	</tbody>
+			</table>
+		</div>
+
+		<!-- No response tab -->
+		<div class="tab-pane fade" id="noresponse" role="tabpanel" aria-labelledby="tab-noresponse">
+			<h3>No Response</h3>
+			<p>
+				<ul>
+					<li>Consent: <span class="text-success">Yes</span></li>
+					<li>Logged In: <span class="text-danger">No</span></li>
+					<li>Institution Linked: <span class="text-danger">No</span></li>
+				</ul>
+			</p>
+			<hr/>
+			<h5>UAS Panel Members:</h5>
+			<table class="table table-sm table-hover table-bordered bg-white">
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<tbody>
+			{% with 1 as cnt %}
+			{% for user in users %}
+			{% if user.username|is_uas_panel_member == True and user.last_login == None and user.user_treatments.consent == 1 %}
+				<tr>
+				<td>{{ cnt }}</td>
+		 		<td>{{ user.username}}</td>
+		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td> - </td>
+		 		<td>Never</td>
+		 		<td>{{ user.user_treatments }}</td>
+		 		</tr>
+		 		{% ++ cnt %}
+			{% endif %}
+		 	{% endfor %}
+		 	{% endwith %}
+		 	</tbody>
+			</table>
+			<br/>
+			<h5>CESR, CFSI & Test Users:</h5>
+			<table class="table table-sm table-hover table-bordered bg-white">
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<tbody>
+			{% with 1 as cnt %}
+			{% for user in users %}
+			{% if user.username|is_uas_panel_member == False and user.last_login == None and user.user_treatments.consent == 1 %}
+				<tr>
+				<td>{{ cnt }}</td>
+		 		<td>{{ user.username }}</td>
+		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>-</td>
+		 		<td>Never</td>
+		 		<td>{{ user.user_treatments }}</td>
+			 	</tr>
+			 	{% ++ cnt %}
+			 {% endif %}
+		 	{% endfor %}
+		 	{% endwith %}
+		 	</tbody>
+			</table>
+		</div>
+
+		<!-- No Consent tab -->
+		<div class="tab-pane fade" id="noconsent" role="tabpanel" aria-labelledby="tab-noconsent">
+			<h3>No Consent</h3>
+			<p>
+				<ul>
+					<li>Consent: <span class="text-danger">No</span></li>
+					<li>Logged In: <span class="text-danger">No</span></li>
+					<li>Institution Linked: <span class="text-danger">No</span></li>
+				</ul>
+			</p>
+			<hr/>
+			<h5>UAS Panel Members:</h5>
+			<table class="table table-sm table-hover table-bordered bg-white">
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<tbody>
+			{% with 1 as cnt %}
+			{% for user in users %}
+			{% if user.username|is_uas_panel_member == True and user.user_treatments.consent == 0 %}
+				<tr>
+				<td>{{ cnt }}</td>	
+		 		<td>{{ user.username}}</td>
+		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td> - </td>
+		 		<td>Never</td>
+		 		<td>{{ user.user_treatments }}</td>
+		 		</tr>
+		 		{% ++ cnt %}
+			 {% endif %}
+		 	{% endfor %}
+		 	{% endwith %}
+		 	</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock content %}
