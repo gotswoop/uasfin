@@ -25,7 +25,7 @@ def panel_home(request):
 	if not request.user.groups.filter(name='cesr_team').exists():
 		return redirect('home')
 
-	users_obj = User.objects.all()
+	users_obj = User.objects.all().order_by('-last_login')
 
 	counts = {}	
 	counts['active'] = Fin_Items.objects.filter(deleted=0, user_id__gt=1005).values('user_id').distinct().count()

@@ -4,9 +4,16 @@
 <div class="content-section">
 	<h2>UASFin Partipation Summary</h2>
 	<hr/>
+	<p>
+		<ul>
+		<li>Treatment 1: $10 for linking. $1 monthly</li>
+		<li>Treatment 2: $5 for linking. $1 monthly</li>
+		</ul>
+	</p>
+	<br/>
 	<ul class="nav nav-tabs" id="myTab" role="tablist">
 		<li class="nav-item">
-		    <a class="nav-link active" id="tab-active" data-toggle="tab" href="#active" role="tab" aria-controls="active" aria-selected="true">Active ({{ counts.active }})</a>
+		    <a class="nav-link active" id="tab-active" data-toggle="tab" href="#active" role="tab" aria-controls="active" aria-selected="true">Active</a>
 		</li>
 		<li class="nav-item">
 			<a class="nav-link" id="tab-inactive" data-toggle="tab" href="#inactive" role="tab" aria-controls="inactive" aria-selected="false">Inactive</a>
@@ -34,18 +41,18 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
 			{% if user.username|is_uas_panel_member == True and user.fin_items_set.count > 0 %}
 				<tr>
 		 		<td>{{ cnt }}</td>
-		 		<td>{{ user.username}}</td>
+		 		<td>{{ user.username }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
-		 		<td>{{ user.fin_items_set.count }} / {{ user.fin_items_set.count }}</td>
-		 		<td>{{ user.last_login|default:"" }}</td>
-		 		<td>{{ user.user_treatments }}</td>
+		 		<td>{{ user.user_treatments.get_consent }}</td>
+				<td>{{ user.last_login|default:"" }}</td>
+				<td>{{ user.fin_items_set.count }} / {{ user.fin_items_set.count }}</td>
 		 		</tr>
 		 		{% ++ cnt %}
 			{% endif %}
@@ -56,18 +63,22 @@
 			<br/>
 			<h5>CESR, CFSI & Test Users:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
 			{% if user.username|is_uas_panel_member == False and user.fin_items_set.count > 0 %}
 				<tr>
 				<td>{{ cnt }}</td>
-				<td>{{ user.username}}</td>
+		 		<td>{{ user.username }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
-		 		<td>{{ user.fin_items_set.count }} / {{ user.fin_items_set.count }}</td>
-		 		<td>{{ user.last_login|default:"" }}</td>
-		 		<td>{{ user.user_treatments }}</td>
+		 		<td>{{ user.user_treatments.get_consent }}</td>
+				<td>{{ user.last_login|default:"" }}</td>
+		 		{% if user.username == 'swoop' %}
+		 			<td class='text-danger' style="background-color: #faf2cc"><strong>{{ user.fin_items_set.count }} / 5 </strong></td>
+		 		{% else %}
+		 			<td>{{ user.fin_items_set.count }} / {{ user.fin_items_set.count }}</td>
+		 		{% endif %}
 			 	</tr>
 			 	{% ++ cnt %}
 			 {% endif %}
@@ -90,7 +101,7 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -99,9 +110,9 @@
 				<td>{{ cnt }}</td>
 		 		<td>{{ user.username }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
-		 		<td>-</td>
+		 		<td>{{ user.user_treatments.get_consent }}</td>
 		 		<td>{{ user.last_login|default:"" }}</td>
-		 		<td>{{ user.user_treatments }}</td>
+		 		<td>-</td>
 		 		</tr>
 		 		{% ++ cnt %}
 			{% endif %}
@@ -112,7 +123,7 @@
 			<br/>
 			<h5>CESR, CFSI & Test Users:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -121,10 +132,10 @@
 				<td>{{ cnt }}</td>
 		 		<td>{{ user.username }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
-		 		<td>-</td>
+		 		<td>{{ user.user_treatments.get_consent }}</td>
 		 		<td>{{ user.last_login|default:"" }}</td>
-		 		<td>{{ user.user_treatments }}</td>
-			 	</tr>
+		 		<td>-</td>
+		 		</tr>
 			 	{% ++ cnt %}
 			 {% endif %}
 		 	{% endfor %}
@@ -146,18 +157,18 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
 			{% if user.username|is_uas_panel_member == True and user.last_login == None and user.user_treatments.consent == 1 %}
 				<tr>
 				<td>{{ cnt }}</td>
-		 		<td>{{ user.username}}</td>
+		 		<td>{{ user.username }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
-		 		<td> - </td>
+		 		<td>{{ user.user_treatments.get_consent }}</td>
 		 		<td>Never</td>
-		 		<td>{{ user.user_treatments }}</td>
+		 		<td> - </td>
 		 		</tr>
 		 		{% ++ cnt %}
 			{% endif %}
@@ -168,7 +179,7 @@
 			<br/>
 			<h5>CESR, CFSI & Test Users:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -177,9 +188,9 @@
 				<td>{{ cnt }}</td>
 		 		<td>{{ user.username }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.get_consent }}</td>
 		 		<td>-</td>
 		 		<td>Never</td>
-		 		<td>{{ user.user_treatments }}</td>
 			 	</tr>
 			 	{% ++ cnt %}
 			 {% endif %}
@@ -202,18 +213,18 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Institutions (Linked / Active)</th><th>Last Login</th><th>Consent</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
 			{% if user.username|is_uas_panel_member == True and user.user_treatments.consent == 0 %}
 				<tr>
 				<td>{{ cnt }}</td>	
-		 		<td>{{ user.username}}</td>
+		 		<td>{{ user.username }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.get_consent }}</td>
+		 		<td>-</td>
 		 		<td> - </td>
-		 		<td>Never</td>
-		 		<td>{{ user.user_treatments }}</td>
 		 		</tr>
 		 		{% ++ cnt %}
 			 {% endif %}

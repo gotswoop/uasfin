@@ -26,7 +26,7 @@ class User_Treatments(models.Model):
 	class Meta:
 		db_table = "user_treatments"
 
-	def __str__(self):
+	def get_consent(self):
 		if self.consent == 1:
 			return 'Yes'
 		elif self.consent == 0:
