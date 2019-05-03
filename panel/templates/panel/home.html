@@ -2,18 +2,20 @@
 {% block content %}
 {% load panel_custom_filters %}
 <div class="content-section">
-	<h2>UASFin Partipation Summary</h2>
+	<h2>UASFin Metrics</h2>
 	<hr/>
 	<p>
 		<ul>
-		<li>Treatment 1: $10 for linking. $1 monthly</li>
-		<li>Treatment 2: $5 for linking. $1 monthly</li>
+		<li><strong>{{ counts.invited }}</strong> panel members were invited</li>
+		<li><strong>{{ counts.consent_yes }}</strong> agreed to participate and <strong>{{ counts.active }}</strong> linked their financial institutions</li>
+		<li><strong>{{ counts.consent_no }}</strong> did not consent</li>
+		<li><strong>{{ counts.consent_waiting }}</strong> yet to take the consent survey</li>
 		</ul>
 	</p>
 	<br/>
 	<ul class="nav nav-tabs" id="myTab" role="tablist">
 		<li class="nav-item">
-		    <a class="nav-link active" id="tab-active" data-toggle="tab" href="#active" role="tab" aria-controls="active" aria-selected="true">Active</a>
+		    <a class="nav-link active" id="tab-active" data-toggle="tab" href="#active" role="tab" aria-controls="active" aria-selected="true">Active ({{ counts.active }})</a>
 		</li>
 		<li class="nav-item">
 			<a class="nav-link" id="tab-inactive" data-toggle="tab" href="#inactive" role="tab" aria-controls="inactive" aria-selected="false">Inactive</a>
@@ -232,7 +234,35 @@
 		 	{% endwith %}
 		 	</tbody>
 			</table>
+			<br/>
+			<h5>CESR, CFSI & Test Users:</h5>
+			<table class="table table-sm table-hover table-bordered bg-white">
+			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<tbody>
+			{% with 1 as cnt %}
+			{% for user in users %}
+			{% if user.username|is_uas_panel_member == False and user.user_treatments.consent == 0 %}
+				<tr>
+				<td>{{ cnt }}</td>	
+		 		<td>{{ user.username }}</td>
+		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.get_consent }}</td>
+		 		<td>-</td>
+		 		<td> - </td>
+		 		</tr>
+		 		{% ++ cnt %}
+			 {% endif %}
+		 	{% endfor %}
+		 	{% endwith %}
+		 	</tbody>
+			</table>
 		</div>
+	</div>
+	<div class="mt-3">
+		<br/>
+		<small>Treatment 1: $10 for linking. $1 monthly</small>
+		<br/>
+		<small>Treatment 2: $5 for linking. $1 monthly</small>
 	</div>
 </div>
 {% endblock content %}
