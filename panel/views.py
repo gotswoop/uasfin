@@ -18,11 +18,11 @@ from fin.models import Fin_Items, Fin_Accounts, Fin_Transactions, Plaid_Link_Log
 from users.models import User_Treatments, Treatments
 
 @login_required()
-# TODO: Only allow cesr_team members
-# Decorators??
+# TODO: Decorators??
 def panel_home(request):
 
-	if not request.user.groups.filter(name='cesr_team').exists():
+	# Only allow cesr_team and cfsi_team members
+	if not request.user.groups.filter(name__in=['cesr_team','cfsi_team']).exists():
 		return redirect('home')
 
 	users_obj = User.objects.all().order_by('-last_login')

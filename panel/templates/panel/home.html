@@ -44,14 +44,14 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Int. User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
 			{% if user.username|is_uas_panel_member == True and user.fin_items_set.count > 0 %}
 				<tr>
 		 		<td>{{ cnt }}</td>
-		 		<td>{{ user.username }}</td>
+		 		<td>{{ user.pk }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 				<td>{{ user.last_login|localtime|default:"" }}</td>
@@ -104,14 +104,14 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Int. User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
 			{% if user.username|is_uas_panel_member == True and user.fin_items_set.count == 0 and user.last_login != None %}
 				<tr>
 				<td>{{ cnt }}</td>
-		 		<td>{{ user.username }}</td>
+		 		<td>{{ user.pk }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 				<td>{{ user.last_login|localtime|default:"" }}</td>
@@ -160,14 +160,14 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Int. User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
 			{% if user.username|is_uas_panel_member == True and user.last_login == None and user.user_treatments.consent == 1 %}
 				<tr>
 				<td>{{ cnt }}</td>
-		 		<td>{{ user.username }}</td>
+		 		<td>{{ user.pk }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 		 		<td>Never</td>
@@ -216,14 +216,14 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Int. User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
 			{% if user.username|is_uas_panel_member == True and user.user_treatments.consent == 0 %}
 				<tr>
 				<td>{{ cnt }}</td>	
-		 		<td>{{ user.username }}</td>
+		 		<td>{{ user.pk }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 		 		<td>-</td>

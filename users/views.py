@@ -28,7 +28,7 @@ def register(request):
 def profile(request):
     
 	internal_staff = False
-	if request.user.groups.filter(name='cesr_team').exists():
+	if request.user.groups.filter(name__in=['cesr_team','cfsi_team']).exists():
 		internal_staff = True
 
 	try:
