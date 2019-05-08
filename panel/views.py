@@ -34,6 +34,8 @@ def panel_home(request):
 	counts['consent_no'] = User_Treatments.objects.filter(consent=0, user_id__id__gt=1005).count()
 	counts['consent_waiting'] = User_Treatments.objects.filter(consent=None, user_id__id__gt=1005).count()
 	counts['active'] = Fin_Items.objects.filter(deleted=0, user_id__gt=1005).values('user_id').distinct().count()
+	counts['institutions'] = Fin_Items.objects.filter(deleted=0, user_id__gt=1005).count()
+	counts['institutions_average'] = round((counts['institutions'] / counts['active']), 1)
 	#inactive = User.objects.exclude(last_login=None).filter(fin_items__deleted=0, id__gt=1005, user_treatments__consent=1).values('id').distinct()
 		
 	context = {

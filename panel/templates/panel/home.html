@@ -7,11 +7,21 @@
 	<hr/>
 	<p>
 		<ul>
-		<li><strong>{{ counts.invited }}</strong> panel members were invited</li>
-		<li><strong>{{ counts.consent_yes }}</strong> agreed to participate and <strong>{{ counts.active }}</strong> linked their financial institutions</li>
-		<li><strong>{{ counts.consent_no }}</strong> did not consent</li>
-		<li><strong>{{ counts.consent_waiting }}</strong> yet to take the consent survey</li>
-		</ul>
+		<li>
+			<strong>{{ counts.invited }}</strong> panel members invited
+			<ul>
+				<li><strong>{{ counts.consent_waiting }}</strong> yet to take the consent survey</li>
+				<li>
+					<strong>{{ counts.consent_yes }}</strong> agreed to participate
+					<ul>
+						<li><strong>{{ counts.active }}</strong> linked their financial institutions</li>
+						<li><strong>{{ counts.institutions }}</strong> total institutions linked.</li>
+						<li>Avg. of <strong>{{ counts.institutions_average }}</strong> institutions per participant</li>
+					</ul>
+				</li>
+				<li><strong>{{ counts.consent_no }}</strong> did not consent</li>
+			</ul>
+		</li>
 	</p>
 	<br/>
 	<ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -44,7 +54,7 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Int. User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -66,7 +76,7 @@
 			<br/>
 			<h5>CESR, CFSI & Test Users:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -78,7 +88,7 @@
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 				<td>{{ user.last_login|localtime|default:"" }}</td>
 		 		{% if user.username == 'swoop' %}
-		 			<td class='text-danger' style="background-color: #faf2cc"><strong>{{ user.fin_items_set.count }} / 5 </strong></td>
+		 			<td class='text-danger' style="background-color: #faf2cc"><strong>{{ user.fin_items_set.count }} / 4 </strong></td>
 		 		{% else %}
 		 			<td>{{ user.fin_items_set.count }} / {{ user.fin_items_set.count }}</td>
 		 		{% endif %}
@@ -104,7 +114,7 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Int. User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -126,7 +136,7 @@
 			<br/>
 			<h5>CESR, CFSI & Test Users:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -160,7 +170,7 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Int. User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -182,7 +192,7 @@
 			<br/>
 			<h5>CESR, CFSI & Test Users:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -216,7 +226,7 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Int. User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -238,7 +248,7 @@
 			<br/>
 			<h5>CESR, CFSI & Test Users:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Panel Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
