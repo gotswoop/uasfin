@@ -1,0 +1,51 @@
+{% extends "fin/base.html" %}
+{% block content %}
+{% load panel_custom_filters %}
+{% load humanize %}
+{% load tz %}
+<div class="content-section">
+	<h5>UAS Panel Members:</h5>
+	<ol>
+	{% for user in users %}
+	{% if user.username|is_uas_panel_member == True and user.fin_items_set.count > 0 %}
+		<li>{{ user.username }} - {{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }}) - {{ user.fin_items_set.count }} / {{ user.fin_items_set.count }}
+	 		<ol>
+	 			{% for acct in user.fin_items_set.all %}
+	 				{% if acct.deleted == 1 %}
+	 					<li class="text-danger"><a href="{% url 'account_details' item_id=acct.pk %}">{{ acct.p_item_name }}</a> {{ acct.item_refresh_date|naturaltime }}</li>
+	 				{% elif acct.inactive == 1 %}
+	 					<li class="text-warning"><a href="{% url 'account_details' item_id=acct.pk %}">{{ acct.p_item_name }}</a> {{ acct.item_refresh_date|naturaltime }}</li>
+	 				{% else %}
+	 					<li><a href="{% url 'account_details' item_id=acct.pk %}">{{ acct.p_item_name }}</a> {{ acct.item_refresh_date|naturaltime }}</li>
+	 				{% endif %}
+	 			{% endfor %}
+	 		</ol>
+	 		<br/>
+ 		</li>
+	{% endif %}
+ 	{% endfor %}
+ 	</ol>
+ 	<br/>
+	<h5>CESR, CFSI & Test Users:</h5>
+	<ol>
+	{% for user in users %}
+	{% if user.username|is_uas_panel_member == False and user.fin_items_set.count > 0 %}
+		<li>{{ user.username }} - {{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }}) - {{ user.fin_items_set.count }} / {{ user.fin_items_set.count }}
+	 		<ol>
+	 			{% for acct in user.fin_items_set.all %}
+	 				{% if acct.deleted == 1 %}
+	 					<li class="text-danger"><a href="{% url 'account_details' item_id=acct.pk %}">{{ acct.p_item_name }}</a> {{ acct.item_refresh_date|naturaltime }}</li>
+	 				{% elif acct.inactive == 1 %}
+	 					<li class="text-warning"><a href="{% url 'account_details' item_id=acct.pk %}">{{ acct.p_item_name }}</a> {{ acct.item_refresh_date|naturaltime }}</li>
+	 				{% else %}
+	 					<li><a href="{% url 'account_details' item_id=acct.pk %}">{{ acct.p_item_name }}</a> {{ acct.item_refresh_date|naturaltime }}</li>
+	 				{% endif %}
+	 			{% endfor %}
+	 		</ol>
+	 		<br/>
+ 		</li>
+	 {% endif %}
+ 	{% endfor %}
+ 	</ol>
+</div>
+{% endblock content %}
