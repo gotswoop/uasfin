@@ -54,7 +54,7 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Wave</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -63,6 +63,7 @@
 		 		<td>{{ cnt }}</td>
 		 		<td>{{ user.pk }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.wave }}</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 				<td>{{ user.last_login|localtime|default:"" }}</td>
 				<td>{{ user.fin_items_set.count }} / {{ user.fin_items_set.count }}</td>
@@ -76,7 +77,7 @@
 			<br/>
 			<h5>CESR, CFSI & Test Users:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Wave</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -85,6 +86,7 @@
 				<td>{{ cnt }}</td>
 		 		<td>{{ user.username }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.wave }}</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 				<td>{{ user.last_login|localtime|default:"" }}</td>
 		 		{% if user.username == 'swoop' %}
@@ -114,7 +116,7 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Wave</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -123,6 +125,7 @@
 				<td>{{ cnt }}</td>
 		 		<td>{{ user.pk }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.wave }}</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 				<td>{{ user.last_login|localtime|default:"" }}</td>
 		 		<td>-</td>
@@ -136,7 +139,7 @@
 			<br/>
 			<h5>CESR, CFSI & Test Users:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Wave</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -145,6 +148,7 @@
 				<td>{{ cnt }}</td>
 		 		<td>{{ user.username }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.wave }}</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 				<td>{{ user.last_login|localtime|default:"" }}</td>
 		 		<td>-</td>
@@ -170,7 +174,7 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Wave</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -179,6 +183,7 @@
 				<td>{{ cnt }}</td>
 		 		<td>{{ user.pk }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.wave }}</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 		 		<td>Never</td>
 		 		<td> - </td>
@@ -192,7 +197,7 @@
 			<br/>
 			<h5>CESR, CFSI & Test Users:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Wave</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -201,6 +206,7 @@
 				<td>{{ cnt }}</td>
 		 		<td>{{ user.username }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.wave }}</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 		 		<td>Never</td>
 				<td>-</td>
@@ -226,7 +232,7 @@
 			<hr/>
 			<h5>UAS Panel Members:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Wave</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -235,6 +241,7 @@
 				<td>{{ cnt }}</td>	
 		 		<td>{{ user.pk }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.wave }}</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 		 		<td>-</td>
 		 		<td> - </td>
@@ -248,7 +255,7 @@
 			<br/>
 			<h5>CESR, CFSI & Test Users:</h5>
 			<table class="table table-sm table-hover table-bordered bg-white">
-			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Wave</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
@@ -257,6 +264,7 @@
 				<td>{{ cnt }}</td>	
 		 		<td>{{ user.username }}</td>
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.wave }}</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
 		 		<td>-</td>
 		 		<td> - </td>
