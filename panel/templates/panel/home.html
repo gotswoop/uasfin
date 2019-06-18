@@ -23,6 +23,9 @@
 			</ul>
 		</li>
 	</p>
+	{% if cesr_team %}
+		<p><a class="btn btn-sm btn-warning" href="{% url 'panel_download' %}">Download Participation Summary</a></p>
+	{% endif %}
 	<br/>
 	<ul class="nav nav-tabs" id="myTab" role="tablist">
 		<li class="nav-item">
