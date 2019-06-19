@@ -8,7 +8,7 @@ from users.models import User_Treatments, Treatments
 from django.db import IntegrityError
 
 wave = 2
-panel_file = 'wave_2a.csv'
+panel_file = 'plaid_sample_18June2019.csv'
 
 with open(panel_file, 'r') as f:
 	reader = csv.reader(f)
