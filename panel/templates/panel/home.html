@@ -123,7 +123,7 @@
 			<tbody>
 			{% with 1 as cnt %}
 			{% for user in users %}
-			{% if user.username|is_uas_panel_member == True and user.fin_items_set.count == 0 and user.last_login != None %}
+			{% if user.username|is_uas_panel_member == True and user.fin_items_set.count == 0 and user.last_login != None and user.user_treatments.consent == 1 %}
 				<tr>
 				<td>{{ cnt }}</td>
 		 		<td>{{ user.pk }}</td>
@@ -246,7 +246,7 @@
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
 		 		<td>{{ user.user_treatments.wave }}</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
-		 		<td>-</td>
+				<td>{{ user.last_login|localtime|default:"" }}</td>
 		 		<td> - </td>
 		 		</tr>
 		 		{% ++ cnt %}
@@ -269,7 +269,7 @@
 		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
 		 		<td>{{ user.user_treatments.wave }}</td>
 		 		<td>{{ user.user_treatments.get_consent }}</td>
-		 		<td>-</td>
+				<td>{{ user.last_login|localtime|default:"" }}</td>
 		 		<td> - </td>
 		 		</tr>
 		 		{% ++ cnt %}
