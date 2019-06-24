@@ -20,6 +20,7 @@
 					</ul>
 				</li>
 				<li><strong>{{ counts.consent_no }}</strong> did not consent</li>
+				<li><strong>{{ counts.consent_dontbankonline }}</strong> do not bank online</li>
 			</ul>
 		</li>
 	</p>
@@ -39,6 +40,9 @@
 		</li>
 		<li class="nav-item">
 			<a class="nav-link" id="tab-noconsent" data-toggle="tab" href="#noconsent" role="tab" aria-controls="noconsent" aria-selected="false">No Consent</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" id="tab-nobanking" data-toggle="tab" href="#nobanking" role="tab" aria-controls="nobanking" aria-selected="false">Don't Bank Online</a>
 		</li>
 	</ul>
 	<div class="tab-content mt-5" id="myTabContent">
@@ -279,6 +283,66 @@
 		 	</tbody>
 			</table>
 		</div>
+
+		<!-- Doesn't bank online -->
+		<div class="tab-pane fade" id="nobanking" role="tabpanel" aria-labelledby="tab-nobanking">
+			<h3>Don't Bank Online</h3>
+			<p>
+				<ul>
+					<li>Consent: <span class="text-danger">No (Doesn't Bank Online)</span></li>
+					<li>Logged In: <span class="text-danger">No</span></li>
+					<li>Institution Linked: <span class="text-danger">No</span></li>
+				</ul>
+			</p>
+			<hr/>
+			<h5>UAS Panel Members:</h5>
+			<table class="table table-sm table-hover table-bordered bg-white">
+			<thead class="thead-light"><tr><th>#</th><th>UASFin User Id</th><th>Treatment</th><th>Wave</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<tbody>
+			{% with 1 as cnt %}
+			{% for user in users %}
+			{% if user.username|is_uas_panel_member == True and user.user_treatments.consent == 2 %}
+				<tr>
+				<td>{{ cnt }}</td>	
+		 		<td>{{ user.pk }}</td>
+		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.wave }}</td>
+		 		<td>{{ user.user_treatments.get_consent }}</td>
+				<td>{{ user.last_login|localtime|default:"" }}</td>
+		 		<td> - </td>
+		 		</tr>
+		 		{% ++ cnt %}
+			 {% endif %}
+		 	{% endfor %}
+		 	{% endwith %}
+		 	</tbody>
+			</table>
+			<br/>
+			<h5>CESR, CFSI & Test Users:</h5>
+			<table class="table table-sm table-hover table-bordered bg-white">
+			<thead class="thead-light"><tr><th>#</th><th>Username</th><th>Treatment</th><th>Wave</th><th>Consent</th><th>Last Login</th><th>Institutions (Linked / Active)</th></tr></thead>
+			<tbody>
+			{% with 1 as cnt %}
+			{% for user in users %}
+			{% if user.username|is_uas_panel_member == False and user.user_treatments.consent == 2 %}
+				<tr>
+				<td>{{ cnt }}</td>	
+		 		<td>{{ user.username }}</td>
+		 		<td>{{ user.user_treatments.treatment.pk }} (${{ user.user_treatments.treatment.reward_link }} / ${{ user.user_treatments.treatment.reward_monthly }})</td>
+		 		<td>{{ user.user_treatments.wave }}</td>
+		 		<td>{{ user.user_treatments.get_consent }}</td>
+				<td>{{ user.last_login|localtime|default:"" }}</td>
+		 		<td> - </td>
+		 		</tr>
+		 		{% ++ cnt %}
+			 {% endif %}
+		 	{% endfor %}
+		 	{% endwith %}
+		 	</tbody>
+			</table>
+		</div>
+
+
 	</div>
 	<div class="mt-3">
 		<br/>

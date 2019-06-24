@@ -34,6 +34,7 @@ def panel_home(request):
 	counts['invited'] = User.objects.filter(is_active=1, id__gt=1005).count()
 	counts['consent_yes'] = User_Treatments.objects.filter(consent=1, user_id__id__gt=1005).count()
 	counts['consent_no'] = User_Treatments.objects.filter(consent=0, user_id__id__gt=1005).count()
+	counts['consent_dontbankonline'] = User_Treatments.objects.filter(consent=2, user_id__id__gt=1005).count()
 	counts['consent_waiting'] = User_Treatments.objects.filter(consent=None, user_id__id__gt=1005).count()
 	counts['active'] = Fin_Items.objects.filter(deleted=0, user_id__gt=1005).values('user_id').distinct().count()
 	counts['institutions'] = Fin_Items.objects.filter(deleted=0, user_id__gt=1005).count()
@@ -94,6 +95,7 @@ def panel_download(request):
 	ws_2 = wb.add_sheet('Inactive Users')
 	ws_3 = wb.add_sheet('No Response')
 	ws_4 = wb.add_sheet('No Consent')
+	ws_5 = wb.add_sheet('Don\'t Bank Online')
 
 	# Active Users
 	# Sheet header, first row
@@ -211,6 +213,35 @@ def panel_download(request):
 			row_num += 1
 			for col_num in range(len(row)):
 				ws_4.write(row_num, col_num, row[col_num], font_style)
-			
+
+	# Don't bank online
+	# Sheet header, first row
+	row_num = 0
+
+	font_style = xlwt.XFStyle()
+	font_style.font.bold = True
+
+	columns = ['Panel Id', 'Treatment', 'Wave', 'Consent', 'Last Login', 'Institutions Liked' ]
+
+	for col_num in range(len(columns)):
+		ws_5.write(row_num, col_num, columns[col_num], font_style)
+
+	# Sheet body, remaining rows
+	font_style = xlwt.XFStyle()
+
+	for user in users:
+		if user.user_treatments.consent == 2:
+			row = [
+				user.username, 
+				str(user.user_treatments.treatment.pk) + ' $' + str(user.user_treatments.treatment.reward_link) + ' / $' + str(user.user_treatments.treatment.reward_monthly),
+				user.user_treatments.wave,
+				user.user_treatments.get_consent(),
+				'Never',
+				'-'
+			]
+			row_num += 1
+			for col_num in range(len(row)):
+				ws_5.write(row_num, col_num, row[col_num], font_style)
+						
 	wb.save(response)
 	return response
