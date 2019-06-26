@@ -3,7 +3,8 @@
 from django.contrib.auth.models import User
 from fin.models import Fin_Items
 
-users = User.objects.filter(is_active=1,id__gte=1000)
+users = User.objects.filter(is_active=1,id__gt=1005)
+print("TRUNCATE TABLE uas.plaid_call;")
 for user in users:
 
 	consent = user.user_treatments.consent
@@ -19,7 +20,5 @@ for user in users:
 	if inst_count:
 		linked_bank = 1
 
-	sql = 'INSERT INTO plaid_call VALUES(' + user.username + ', ' + str(consent) + ', ' + str(account_setup) + ', ' + str(linked_bank) + ', ' + str(user.user_treatments.treatment.pk) + ', "$' + str(user.user_treatments.treatment.reward_link) + '", "$' +  str(user.user_treatments.treatment.reward_monthly) + '");'
+	sql = 'INSERT INTO plaid_call (rtid, consent, account_setup, linked_bank, treatment, reward_link, reward_monthly) VALUES(' + user.username + ', ' + str(consent) + ', ' + str(account_setup) + ', ' + str(linked_bank) + ', ' + str(user.user_treatments.treatment.pk) + ', "$' + str(user.user_treatments.treatment.reward_link) + '", "$' +  str(user.user_treatments.treatment.reward_monthly) + '");'
 	print(sql)
-
-print("# Make sure to populate table plaid with 'INSERT INTO plaid (rtid) SELECT rtid FROM plaid_call'")
