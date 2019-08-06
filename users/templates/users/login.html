@@ -12,10 +12,25 @@
                 <button class="btn btn-outline-info" type="submit">Login</button>
             </div>
         </form>
-        <div class="border-top pt-3">
+        <div class="border-top border-bottom pt-3">
+        	<h5>Login Help</h5>
             <p>
-                <a href="{% url 'password_reset' %}">Reset password</a>
+                <ul>
+                <li>Username: This is your UAS panel id</li>
+               	<li><span class="text-danger">Password: This is unique to UASFin (current website) <u>and different</u> from your UAS panel password</span></li>
+               	<li>How to reset the password on this UASFin (current website)
+				<ol>
+					<li>Login to your <a href="https://uas.usc.edu/panel/" target="_blank">UAS Panel</a> page  (Please contact <a href="mailto:uashelp@usc.edu" target="_blank">uashelp@usc.edu</a> if you don't remember the credentials to your panel page)</li>
+					<li>Click on the UASFin tab (<a href="https://uasfin.usc.edu/screens/panel_dashboard_consent_yes.png" target="_blank">image</a>)</li>
+					<li>Follow the link on the line "Reset your UASFin password <strong>here</strong>"</li>
+					<li>This opens a new page where you can set your password (<a href="/screens/password_reset.png" target="_blank">image</a>)</li>
+					<li>Use your panel id for username, and your new password you just setup to login to this site (UASFin)</li>
+					</ol>
+				</li>
+				</ul>
             </p>
         </div>
     </div>
 {% endblock content %}
+
+
