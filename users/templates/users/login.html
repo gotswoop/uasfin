@@ -1,36 +1,65 @@
 {% extends "fin/base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <div class="content-section">
-        <form method="POST">
-            {% csrf_token %}
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Welcome to UASFin!</legend>
-                {{ form|crispy }}
-            </fieldset>
-            <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">Login</button>
-            </div>
-        </form>
-        <div class="border-top border-bottom pt-3">
-        	<h5>Login Help</h5>
-            <p>
-                <ul>
-                <li>Username: This is your UAS panel id</li>
-               	<li><span class="text-danger">Password: This is unique to UASFin (current website) <u>and different</u> from your UAS panel password</span></li>
-               	<li>How to reset the password to UASFin (current website)
-				<ol>
-					<li>Login to your <a href="https://uas.usc.edu/panel/" target="_blank">UAS Panel</a> page  (Please contact <a href="mailto:uashelp@usc.edu" target="_blank">uashelp@usc.edu</a> if you don't remember the credentials to your panel page)</li>
-					<li>Click on the UASFin tab (<a href="https://uasfin.usc.edu/screens/panel_dashboard_consent_yes.png" target="_blank">image</a>)</li>
-					<li>Follow the link on the line "Reset your UASFin password <strong>here</strong>"</li>
-					<li>This opens a new page where you can set your password (<a href="/screens/password_reset.png" target="_blank">image</a>)</li>
-					<li>Use your panel id for username, and your new password you just setup to login to this site (UASFin)</li>
-					</ol>
-				</li>
-				</ul>
-            </p>
+<div class="content-section">
+    <form method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Welcome to UASFin!</legend>
+            {{ form|crispy }}
+        </fieldset>
+        <div class="form-group">
+            <button class="btn btn-outline-info" type="submit">Login</button>
         </div>
+    </form>
+    <div class="border-top border-bottom pt-3">
+    	<h5>Login Help</h5>
+        <p>
+            <ul>
+            <li>Username: This is your UAS panel id</li>
+           	<li><span class="text-danger">Password: This is unique to UASFin (current website) <u>and different</u> from your UAS panel password</span></li>
+           	<li>How to reset the password to UASFin (current website)
+			<ol>
+				<li>Login to your <a href="https://uas.usc.edu/panel/" target="_blank">UAS Panel</a> page  (Please contact <a href="mailto:uashelp@usc.edu" target="_blank">uashelp@usc.edu</a> if you don't remember the credentials to your panel page)</li>
+				<li>Click on the UASFin tab <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#myModal1">Screenshot</button></li>
+				
+				<li>Follow the link on the line "Reset your UASFin password <strong>here</strong>"</li>
+				<li>This opens a new page where you can set your password <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#myModal2">Screenshot</button></li>
+				<li>Use your panel id for Username, and your new password you just setup to login to this site (UASFin)</li>
+				</ol>
+			</li>
+			</ul>
+        </p>
+        <div id="myModal1" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+        				<h5 class="modal-title">Screenshot of UAS Panel Page</h5>
+        				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          					<span aria-hidden="true">&times;</span>
+        				</button>
+      				</div>
+					<div class="modal-body">
+        				<img src="/screens/panel_dashboard_consent_yes.png" class="img-responsive" width="100%">
+    				</div>
+				</div>
+			</div>
+		</div>
+		<div id="myModal2" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+        				<h5 class="modal-title">Screenshot of UASFin Password Reset Page</h5>
+        				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          					<span aria-hidden="true">&times;</span>
+        				</button>
+      				</div>
+					<div class="modal-body">
+        				<img src="/screens/password_reset.png" class="img-responsive" width="100%">
+    				</div>
+				</div>
+			</div>
+		</div>
     </div>
+</div>
 {% endblock content %}
-
-
