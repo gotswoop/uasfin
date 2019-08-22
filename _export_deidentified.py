@@ -4,17 +4,54 @@ import sys
 import os
 from django.conf import settings
 from django.contrib.auth.models import User
-from fin.models import Fin_Transactions
+from fin.models import Fin_Transactions, Fin_Accounts
 from django.db import IntegrityError
 from datetime import date
 
-csv_file = 'uasfin_deidentified_' + str(date.today()) + '.csv'
-
-trans_objs = Fin_Transactions.objects.filter(p_pending=0,removed=0,account_id__item_id__user_id__pk__gte=1005)
+csv_file = 'uasfin_deidentified_accounts.csv'
+account_objs = Fin_Accounts.objects.filter(item_id__user_id__pk__gt=1005)
 
 with open(csv_file, 'w') as csvFile:
 	writer = csv.writer(csvFile)
-	writer.writerow(["user_id_internal", "fin_institution_id_internal", "fin_institution_inactive", "fin_institution_deleted", "account_id_internal", "account_balances_available", "account_balances_current", "account_balances_iso_currency_code", "account_balances_limit", "account_balances_unofficial_currency_code", "account_subtype", "account_type", "transaction_id_internal", "transaction_amount", "transaction_category", "transaction_category_id", "transaction_p_date", "transaction_iso_currency_code", "transaction_meta_payment_method", "transaction_meta_payment_processor", "transaction_transaction_type", "transaction_unofficial_currency_code"])
+	writer.writerow(["user_id_internal", "fin_institution_id_internal", "fin_institution_inactive", "fin_institution_deleted", "account_id_internal", "account_balances_available", "account_balances_current", "account_balances_iso_currency_code", "account_balances_limit", "account_balances_unofficial_currency_code", "account_subtype", "account_type"])
+	for t in account_objs:
+		# user0 = t.item_id.user_id.username
+		user1 = t.item_id.user_id.pk
+
+		item1 = t.item_id.pk
+		# item2 = t.item_id.p_item_id
+		# item3 = t.item_id.p_institution_id
+		# item4 = t.item_id.p_item_name
+		item5 = t.item_id.inactive
+		item6 = t.item_id.deleted
+
+		account1 = t.pk
+		# account2 = t.p_account_id
+		# account3 = t.p_name
+		account4 = t.p_balances_available
+		account5 = t.p_balances_current
+		account6 = t.p_balances_iso_currency_code
+		account7 = t.p_balances_limit
+		account8 = t.p_balances_unofficial_currency_code
+		# account9 = t.p_mask
+		# account10 = t.p_official_name
+		account11 = t.p_subtype
+		account12 = t.p_type
+
+		writer.writerow([
+			user1,
+			item1, item5, item6,
+			account1, account4, account5, account6, account7, account8, account11, account12
+		])
+
+csvFile.close()
+
+csv_file = 'uasfin_deidentified_transactions.csv'
+trans_objs = Fin_Transactions.objects.filter(p_pending=0,removed=0,account_id__item_id__user_id__pk__gt=1005)
+
+with open(csv_file, 'w') as csvFile:
+	writer = csv.writer(csvFile)
+	writer.writerow(["account_id_internal", "transaction_id_internal", "transaction_amount", "transaction_category", "transaction_category_id", "transaction_p_date", "transaction_iso_currency_code", "transaction_meta_payment_method", "transaction_meta_payment_processor", "transaction_transaction_type", "transaction_unofficial_currency_code"])
 	for t in trans_objs:
 		# user0 = t.account_id.item_id.user_id.username
 		user1 = t.account_id.item_id.user_id.pk
@@ -67,9 +104,7 @@ with open(csv_file, 'w') as csvFile:
 		transaction25 = t.p_unofficial_currency_code
 
 		writer.writerow([
-			user1, 
-			item1, item5, item6, 
-			account1, account4, account5, account6, account7, account8, account11, account12,
+			account1,
 			transaction0, transaction2, transaction3, transaction4, transaction5, transaction6, transaction18, transaction19, transaction24, transaction25
 		])
 
