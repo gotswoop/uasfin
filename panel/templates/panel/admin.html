@@ -26,7 +26,7 @@
  	{% endfor %}
  	</ol>
  	<br/>
-	<h5>CESR, CFSI & Test Users:</h5>
+	<h5>CESR, FinHealthNetwork & Test Users:</h5>
 	<ol>
 	{% for user in users %}
 	{% if user.username|is_uas_panel_member == False and user.fin_items_set.count > 0 %}
