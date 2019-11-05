@@ -1,4 +1,4 @@
-# python3 manage.py shell < _export_cfsi.py
+# python3 manage.py shell < _export_identified.py
 import csv
 import sys
 import os
