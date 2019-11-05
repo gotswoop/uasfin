@@ -42,6 +42,26 @@ class Fin_Accounts(models.Model):
 		unique_together = ("item_id", "p_account_id")
 		db_table = "fin_accounts"
 
+class Fin_Accounts_History(models.Model):
+	item_id = models.ForeignKey(Fin_Items, db_column='item_id', on_delete=models.PROTECT)
+	p_account_id = models.CharField(max_length=250)
+	p_balances_available = models.DecimalField(max_digits=19, decimal_places=4, null=True)
+	p_balances_current = models.DecimalField(max_digits=19, decimal_places=4, null=True)
+	p_balances_iso_currency_code = models.CharField(max_length=10, default="USD", null=True)
+	p_balances_limit = models.DecimalField(max_digits=19, decimal_places=4, null=True)
+	p_balances_unofficial_currency_code = models.CharField(max_length=50, null=True)
+	p_mask = models.CharField(max_length=50, null=True)
+	p_name = models.CharField(max_length=250, null=True)
+	p_official_name = models.CharField(max_length=250, null=True)
+	p_subtype = models.CharField(max_length=100, null=True)
+	p_type = models.CharField(max_length=100, null=True)
+	date_created = models.DateTimeField(auto_now_add=True)
+	date_updated = models.DateTimeField(auto_now=True)
+	account_refresh_date = models.DateTimeField(null=True)
+
+	class Meta:
+		db_table = "fin_accounts_history"
+
 class Fin_Transactions(models.Model):
 	account_id = models.ForeignKey(Fin_Accounts, db_column='account_id', on_delete=models.PROTECT)
 	p_account_owner = models.CharField(max_length=250, null=True)

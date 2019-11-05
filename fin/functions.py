@@ -13,7 +13,7 @@ from django.contrib import messages
 
 from datetime import datetime, timedelta
 
-from fin.models import Fin_Items, Fin_Accounts, Fin_Transactions, Plaid_Link_Logs, Plaid_Webhook_Logs, User_Actions, Users_With_Linked_Institutions
+from fin.models import Fin_Items, Fin_Accounts, Fin_Accounts_History, Fin_Transactions, Plaid_Link_Logs, Plaid_Webhook_Logs, User_Actions, Users_With_Linked_Institutions
 from users.models import User_Treatments
 
 logger = logging.getLogger(__name__)
@@ -83,6 +83,21 @@ def fetch_transactions_from_plaid(client, item):
 				fin_account.p_balances_limit = account.get('balances').get('limit')
 				fin_account.account_refresh_date = datetime.now()
 				fin_account.save(update_fields=['p_balances_available','p_balances_current','p_balances_limit','account_refresh_date'])
+
+				accounts_history = Fin_Accounts_History.objects.create(
+					item_id = item,
+					p_account_id = account.get('account_id'),
+					p_balances_available = account.get('balances').get('available'),
+					p_balances_current = account.get('balances').get('current'),
+					p_balances_iso_currency_code = account.get('balances').get('iso_currency_code'),
+					p_balances_limit = account.get('balances').get('limit'),
+					p_balances_unofficial_currency_code = account.get('balances').get('unofficial_currency_code'),
+					p_mask = account.get('mask'),
+					p_name = account.get('name'),
+					p_official_name = account.get('official_name'),
+					p_subtype = account.get('subtype'),
+					p_type = account.get('type')
+				)
 		
 		# Exiting when nothing left to fetch from plaid
 		if remaining_transactions < 1:

@@ -17,7 +17,7 @@ from django.core import serializers
 
 from datetime import datetime, timedelta
 
-from fin.models import Fin_Items, Fin_Accounts, Fin_Transactions, Plaid_Link_Logs, Plaid_Webhook_Logs, User_Actions, Users_With_Linked_Institutions
+from fin.models import Fin_Items, Fin_Accounts, Fin_Accounts_History, Fin_Transactions, Plaid_Link_Logs, Plaid_Webhook_Logs, User_Actions, Users_With_Linked_Institutions
 from fin.functions import pretty_print_response, fetch_transactions_from_plaid, log_incoming_webhook, insert_transaction, format_error, log_user_actions, fetch_treatment, error_handler
 from users.models import User_Treatments, Treatments
 
@@ -417,6 +417,20 @@ def plaid_link_onSuccess(request):
 				accounts = accounts_response.get('accounts')
 				for account in accounts:
 					new_account = Fin_Accounts.objects.create(
+						item_id = fin_item,
+						p_account_id = account.get('account_id'),
+						p_balances_available = account.get('balances').get('available'),
+						p_balances_current = account.get('balances').get('current'),
+						p_balances_iso_currency_code = account.get('balances').get('iso_currency_code'),
+						p_balances_limit = account.get('balances').get('limit'),
+						p_balances_unofficial_currency_code = account.get('balances').get('unofficial_currency_code'),
+						p_mask = account.get('mask'),
+						p_name = account.get('name'),
+						p_official_name = account.get('official_name'),
+						p_subtype = account.get('subtype'),
+						p_type = account.get('type')
+					)
+					fin_accounts_history = Fin_Accounts_History.objects.create(
 						item_id = fin_item,
 						p_account_id = account.get('account_id'),
 						p_balances_available = account.get('balances').get('available'),
