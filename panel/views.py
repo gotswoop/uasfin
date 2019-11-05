@@ -104,7 +104,7 @@ def panel_download(request):
 	font_style = xlwt.XFStyle()
 	font_style.font.bold = True
 
-	columns = ['Panel Id', 'Treatment', 'Wave', 'Consent', 'Last Login', 'Institutions Liked' ]
+	columns = ['Panel Id', 'Treatment', 'Wave', 'Consent', 'Last Login', 'Institutions Linked', 'Institutions Active', 'Institutions Inactive', 'Institutions Deleted' ]
 
 	for col_num in range(len(columns)):
 		ws_1.write(row_num, col_num, columns[col_num], font_style)
@@ -120,7 +120,10 @@ def panel_download(request):
 				user.user_treatments.wave,
 				user.user_treatments.get_consent(),
 				user.last_login.strftime("%Y-%m-%d"),
-				user.fin_items_set.count()
+				user.fin_items_set.count(),
+				user.fin_items_set.filter(deleted=0,inactive=0).count(),
+				user.fin_items_set.filter(deleted=0,inactive=1).count(),
+				user.fin_items_set.filter(deleted=1).count()
 			]
 			row_num += 1
 			for col_num in range(len(row)):
@@ -133,7 +136,7 @@ def panel_download(request):
 	font_style = xlwt.XFStyle()
 	font_style.font.bold = True
 
-	columns = ['Panel Id', 'Treatment', 'Wave', 'Consent', 'Last Login', 'Institutions Liked' ]
+	columns = ['Panel Id', 'Treatment', 'Wave', 'Consent', 'Last Login', 'Institutions Linked' ]
 
 	for col_num in range(len(columns)):
 		ws_2.write(row_num, col_num, columns[col_num], font_style)
@@ -163,7 +166,7 @@ def panel_download(request):
 	font_style = xlwt.XFStyle()
 	font_style.font.bold = True
 
-	columns = ['Panel Id', 'Treatment', 'Wave', 'Consent', 'Last Login', 'Institutions Liked' ]
+	columns = ['Panel Id', 'Treatment', 'Wave', 'Consent', 'Last Login', 'Institutions Linked' ]
 
 	for col_num in range(len(columns)):
 		ws_3.write(row_num, col_num, columns[col_num], font_style)
@@ -192,7 +195,7 @@ def panel_download(request):
 	font_style = xlwt.XFStyle()
 	font_style.font.bold = True
 
-	columns = ['Panel Id', 'Treatment', 'Wave', 'Consent', 'Last Login', 'Institutions Liked' ]
+	columns = ['Panel Id', 'Treatment', 'Wave', 'Consent', 'Last Login', 'Institutions Linked' ]
 
 	for col_num in range(len(columns)):
 		ws_4.write(row_num, col_num, columns[col_num], font_style)
@@ -221,7 +224,7 @@ def panel_download(request):
 	font_style = xlwt.XFStyle()
 	font_style.font.bold = True
 
-	columns = ['Panel Id', 'Treatment', 'Wave', 'Consent', 'Last Login', 'Institutions Liked' ]
+	columns = ['Panel Id', 'Treatment', 'Wave', 'Consent', 'Last Login', 'Institutions Linked' ]
 
 	for col_num in range(len(columns)):
 		ws_5.write(row_num, col_num, columns[col_num], font_style)
