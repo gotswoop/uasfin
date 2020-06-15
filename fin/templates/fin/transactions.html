@@ -29,13 +29,13 @@
 	<div class="card-body bg-white">
 		{% if transactions|length == 0%}
 			<p class="ml-2 pb-2"><small>No transactions to show.</small></p>
-			<p><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.item_id.pk %}">Back to {{ account.item_id.p_item_name }}</a></p>
+			<p><br/><a class="btn btn-info btn-sm" href="{% url 'account_details' item_id=account.item_id.pk %}">Back to {{ account.item_id.p_item_name }}</a></p>
 		{% else %}
 			<div class="table-responsive">
 				<table class="table table-sm table-hover table-bordered bg-white">
 					<caption>
 						<p><small> * Showing last 6 months of transactions. Excludes pending transactions.</small></p>
-						<p><a class="btn btn-outline-info btn-sm" href="{% url 'account_details' item_id=account.item_id.pk %}">Back to {{ account.item_id.p_item_name }}</a></p>
+						<p><br/><a class="btn btn-info btn-sm" href="{% url 'account_details' item_id=account.item_id.pk %}">Back to {{ account.item_id.p_item_name }}</a></p>
 					</caption>
 					<thead class="thead-light"><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr></thead>
 					<tbody>

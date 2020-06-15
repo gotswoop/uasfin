@@ -1,0 +1,56 @@
+{% extends "fin/base.html" %}
+{% load static %}
+{% load mathfilters %}
+{% block content %}
+<script
+  src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous">
+ </script>
+
+<div id="account_linking_question" class="content-section mt-3">
+	<div id="loading">
+		<h6>Loading...</h6>
+	</div>
+</div>
+
+<div id="error" class="alert alert-warning mt-3" role="alert"></div>
+
+<script>
+	(function($) {
+		$.ajaxSetup({ 
+			data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+		});
+
+		$(document)
+		.ajaxStart(function () {
+			$('#loading').show();
+		})
+		.ajaxStop(function () {
+			$('#loading').hide();
+		});
+
+		$(document).ready(function() {
+			$('#loading').show();
+			$('#error').hide();
+			$('#account_linking_question').load('/static/fin/pages/{{ next_question }}.html', function () {
+	 			$(".link_button").click(function(){
+	 				var question = '{{ next_question }}';
+	 				var question_desc = document.getElementById("question_desc").value;
+	 				var question_response = $(this).attr("value");
+					console.log("User Response to " + question + " - " + question_desc + " is " + question_response);
+
+					$.post("{% url 'add_account' %}", {
+						question: question,
+						question_desc: question_desc,
+						question_response: question_response,
+					}, function(data) {
+						window.top.location.replace("{% url 'add_account' %}");
+					});	
+				});
+			});
+			$('#loading').hide();
+	 	});
+
+	})(jQuery);
+</script>
+
+{% endblock content %}

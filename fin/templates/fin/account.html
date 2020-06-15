@@ -35,9 +35,12 @@
 	</div>
 	<div class="card-body bg-white">
 		<h6>Click each account for list of transactions.</h6>
+		<p><small>Please contact the UAS helpdesk if you would like to unlink certain accounts below.</small></p>
 		<div class="table-responsive">
 			<table class="table table-sm table-bordered bg-white">
-				<caption><a class="btn btn-outline-info btn-sm" href="{% url 'home'  %}">Back to Dashboard</a></caption>	
+				<caption>
+					<br/><a class="btn btn-info btn-sm" href="{% url 'home'  %}">Back to Dashboard</a>
+				</caption>	
 				<thead class="thead-light"><tr><th>Account</th><th class="d-none d-md-table-cell">Details</th><th class="d-none d-md-table-cell">Type</th><th>Balance</th></tr></thead>
 				<tbody>
 					{% for account in accounts %}

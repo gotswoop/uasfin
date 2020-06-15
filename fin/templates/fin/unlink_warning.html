@@ -2,11 +2,11 @@
 {% load static %}
 {% block content %}
 <div class="row">
-	<div class="col-md-8">
-		<div class="card text-white bg-danger mb-3">
+	<div class="col-md-12">
+		<div class="card text-dark bg-white mb-3">
 			<div class="card-header"><h5><img src="{% static 'fin/warning.gif' %}" style="width:30px;"/><span class="ml-2">WARNING</span></h5></div>
 			<div class="card-body">
-				 <h5 class="card-title">You are about to unlink {{ institution_name }}</h5>
+				 <h5 class="card-title">You are about to unlink <span class="h4 text-info">{{ institution_name }}</span></h5>
 	    		<p class="card-text">
 			    	<ol>
 					<li>You will <strong>NOT</strong> be able to link this account again</li>
@@ -25,14 +25,16 @@
 			</form>
 		</p>
 	</div>
+	<!--
 	<div class="col-md-4">
 		<div class="card">
 			<div class="card-header bg-success text-white">
-				<h6>Number of Institutions Linked: {{ items }}</h6>
-				<h6>Monthly Rewards Earnings: {{ items }} x ${{treatment.reward_monthly}} = ${% widthratio treatment.reward_monthly 1 items %}</h6></div>
+				<h6>Total Number of Institutions Linked: {{ items }}</h6>
+				<h6>Total Rewards for Linking: ${% widthratio treatment.reward_link 1 items %}</h6>
+				<h6>Total Monthly Rewards Earnings: ${% widthratio treatment.reward_monthly 1 items %}</h6>
 		 </div>
 		<div class="card mt-2">
-		  <div class="card-body border border-success">
+		  <div class="card-body border border-secondary">
 		    <p class="card-text">
 		    	These are the accounts often linked by other survey participants:
 				<ul>
@@ -51,5 +53,6 @@
 		  </div>
 		</div>
 	</div>
+	-->
 </div>
 {% endblock content %}

@@ -1,0 +1,63 @@
+{% extends 'fin/base.html' %}
+{% block content %}
+<div id="summary" class="border">
+	<div class="p-4 mb-3">
+	  	<h4>Thank you for participating in this study.</h4>
+	  	{% if item_ids %}
+		    <p class="pt-2">You’ve added:
+		    	<div class="accordion" id="accordionExample">
+		    	{% for item_id in item_ids %}
+		    	<div class="card">
+    				<div class="card-header" id="heading{{forloop.counter}}">
+      					<h2 class="mb-0">
+        				<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{forloop.counter}}" aria-expanded="true" aria-controls="collapse{{forloop.counter}}">
+          				{{ forloop.counter }}. {{ item_id.p_item_name }}
+        				</button>
+      					</h2>
+    				</div>
+    				{% if forloop.counter == 1 %}
+    					<div id="collapse{{forloop.counter}}" class="panel-title collapse show" aria-labelledby="heading{{forloop.counter}}" data-parent="#accordionExample">
+    				{% else %}
+    					<div id="collapse{{forloop.counter}}" class="panel-title collapse" aria-labelledby="heading{{forloop.counter}}" data-parent="#accordionExample">
+    				{% endif %}
+      					<div class="card-body">
+      					<ul>
+        				{% for a in item_id.fin_accounts_set.all %}
+      						<li>{{ a.p_name }}</li>
+    					{% endfor %}
+    					</ul>
+      					</div>
+    				</div>
+    			</div>
+    			{% endfor %}
+  				</div>
+			</p>
+			<p>
+				If you would like to unlink certain accounts from these institutions, please contact the UAS helpdesk at <a href="tel:1-855-872-8673">1-855-872-8673</a> or by email (<a href="mailto:uashelp@usc.edu?subject=[UASFin]">uashelp@usc.edu</a>) to request that the account be removed. 
+			</p>
+			<p>
+				You have earned <span class="text-success font-weight-bold">${% widthratio treatment.reward_link 1 items %}</span> for adding these institutions. You will earn <span class="text-success font-weight-bold">${% widthratio treatment.reward_monthly 1 items %}</span> for every month these institutions remain linked.
+			</p>
+			<p>
+				Have you forgotten to add any financial accounts? <br/>
+				<small>(If you open a new account, you can always add it later.) </small>
+			</p>
+		{% else %}
+		    <p class="pt-2">You’ve added <span class="font-weight-bold">0</span> institutions and will be earning <span class="font-weight-bold text-success">$0</span>.</p>
+			<p>
+				Please contact the UAS helpdesk at <a href="tel:1-855-872-8673">1-855-872-8673</a> or by email (<a href="mailto:uashelp@usc.edu?subject=[UASFin]">uashelp@usc.edu</a>) if you are experiencing any issues linking accounts.
+			</p>
+			<p>
+				Would you like to try again?
+			</p>
+		{% endif %}
+
+		<form action="/add_plus/" method="post">{% csrf_token %}
+			<button class="link_button btn btn-primary mr-2" type="submit" name="question_response" value="Yes">Yes</button>
+			<button class="link_button btn btn-primary mr-2" type="submit" name="question_response" value="No">No - I've added all my accounts</button>
+			<input type="hidden" id="question" name="question" value="q_09_thankyou">
+			<input type="hidden" id="question_desc" name="question_desc" value="thankyou">
+		</form>		
+	</div>
+</div>
+{% endblock content %}

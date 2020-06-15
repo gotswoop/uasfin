@@ -1,44 +1,38 @@
 {% extends 'fin/base.html' %}
 {% block content %}
+
 <ol class="breadcrumb">
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
-  <li class="breadcrumb-item active">About</li>
+  <li class="breadcrumb-item active">UASFin Privacy Policy</li>
 </ol>
 
-<div class="card">
-	<div class="card-header">
-		<h6>About the UASFin study</h6>
-	</div>
-	<div class="card-body">
-  		<div class="card-text">
-  			<p>To participate in this study, we are asking you to link your financial accounts to our secure website. This is done through Plaid, a company trusted by millions of consumers to help them securely manage their spending and saving.</p>
-
-			<p>The linking process is simple: 
-				<ol>
-				<li>Click on "Link Institution using Plaid"</li>
-				<li>Find your financial institution in the list, or search for it using the search box</li>
-				<li>Click on your financial institution logo</li>
-				<li>Enter your financial institution credentials and click "Submit"</li>
-				</ol>
-
-				Repeat steps 1-4 for each of your financial institutions. Once your financial institutions are linked, you will see all your accounts in one place.</p>
-
-				<p>For each financial institution you link, you will earn a reward, plus an additional reward every month that the account remains active. The green box on the dashboard screen tells you the total monthly rewards you have earned as you link institutions.</p>
-			<p>Remember, <strong>UAS will NOT have access to your credentials or any other identifying information.</strong></p>
-			<p>Your financial information will be kept secure and protected. Plaid will never share your login IDs, passwords, or any other personal information with UAS researchers or anyone else.</p>
-		</div>
-  	</div>
+<div id="intro" class="border border border-dark p-4">
+	<h4>Thank you for participating in UASFin!</h4>
+	<hr/>
+	<p>
+		This study is designed to help researchers understand how people in America manage their money. We plan to use information from this study to identify solutions that can help people lead financially healthy lives.
+	</p>
+	<p>
+		<strong>Your financial information is secure, protected, and confidential.</strong> As with all Understanding America Study surveys you take, the information you share with us is combined with other participants’ data, and never linked to you individually. We have developed this website in collaboration with <a href="https://plaid.com/what-is-plaid/" target="_blank">Plaid</a>, a company trusted by millions of users to connect their financial accounts to help them manage their money.
+	</p>
+	<p>
+		<strong>Researchers will see only limited account information.</strong> By agreeing to participate in this study, you are giving UAS researchers permission to view your account history and activity, without seeing your passwords, or any indication of who you are. <i>Data is collected to be used for research purposes only.</i> We will only see the account type, institution holding the account, account balance, transaction dates, amounts, and descriptions (like you see on your credit card statement). Our information technology manager may be provided with access to the name contact information associated with the account, but will never access, view, use, or store that information, as it is not needed for our research.
+	</p>
+	<p>
+		<strong>Researchers will see only limited account information.</strong> By agreeing to participate in this study, you are giving UAS researchers permission to view your account activity, without seeing your passwords, or any indication of who you are, for research purposes only. We will only see account type, institution holding the account, account balance, transaction dates, amounts, and descriptions (like you see on your credit card statement).
+	</p>
+ 	<p>
+ 		<strong>Your credentials (username and password) are also private.</strong> Plaid securely protects your credentials and will not share them, or any other personal information, with UAS or anyone else.
+	</p>
+	<p>
+		<strong>We at UAS always follow strict procedures to protect your privacy and keep your private data confidential.</strong> For example, if identifying information such as name, address, or specifics about the transaction are ever included in the information we obtain from Plaid, we delete it before we store the data. No personal identifiers will ever be stored with your transaction data. When we write up results, we only ever publish tables and graphs that do not identify anyone individually.
+	</p>
+	<p>
+		<strong>If you have any questions about this study, or about how we are storing and using this data, please let us know.</strong> You can find out more information about Plaid here: <a href="https://plaid.com/company" target="_blank">https://plaid.com/company</a>. For other questions, just call our help desk at <a href="tel:1-855-872-8673">855.872.8673</a> (9am to 5pm Pacific; Monday through Friday) or send an email to <a href="mailto:uashelp@usc.edu?subject=[UASFin]">uashelp@usc.edu</a>.
+	</p>
 </div>
-<!--
-<div class="card mt-3">
-	<div class="card-header">
-		<h6>Help Topics</h6>
-	</div>
-	<div class="card-body">
-		<div class="card-text">
-		</div>
-	</div>
-</div>
--->
+
 
 {% endblock content %}
+
+

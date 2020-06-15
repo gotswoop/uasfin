@@ -27,7 +27,7 @@
 			apiVersion: 'v2',
 			clientName: 'UASFin',
 			env: '{{ plaid_environment }}',
-			product: products,
+			product: ['transactions','assets'],
 			key: '{{ plaid_public_key }}',
 			webhook: '{{ plaid_webhook_url }}',
 			token: '{{ public_token }}',

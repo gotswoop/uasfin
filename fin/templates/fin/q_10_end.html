@@ -1,0 +1,25 @@
+{% extends 'fin/base.html' %}
+{% block content %}
+
+<div id="intro" class="border borderborder-secondary p-4 m-4">
+	<p>
+		Looks like you’re all set!
+	</p>
+	<p>
+		You can review your earnings and the status of your accounts on your dashboard.
+	</p>
+	<p>
+		Please note that we might get in touch to ask you to re-link your accounts if they become unlinked.
+	</p>
+
+	<form action="/add_plus/" method="post">{% csrf_token %}
+		<button class="link_button btn btn-primary mr-2" type="submit" name="question_response" value="Continue">My Dashboard</button>
+		<input type="hidden" id="question" name="question" value="q_10_end">
+		<input type="hidden" id="question_desc" name="question_desc" value="end">
+	</form>
+</div>
+
+	  </div>
+	</div>
+</div>
+{% endblock content %}

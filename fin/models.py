@@ -110,7 +110,7 @@ class Fin_Transactions(models.Model):
 class User_Actions(models.Model):
 	user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.PROTECT)
 	user_ip = models.CharField(max_length=15)
-	action = models.CharField(max_length=50, null=True)
+	action = models.CharField(max_length=100, null=True)
 	institution_id = models.CharField(max_length=250, null=True)
 	institution_name = models.CharField(max_length=250, null=True)
 	error_code = models.CharField(max_length=100, null=True)

@@ -239,3 +239,155 @@ def format_error(e):
 def pretty_print_response(response):
 	print(json.dumps(response, indent=2, sort_keys=True))
 
+def next_account_linking_question(user_id):
+
+	link_screens = (
+		'q_00_intro', 
+		'q_01_checking', 'link_checking', 'q_01_checking_more', 
+		'q_02_savings', 'link_savings', 'q_02_savings_more', 
+		'q_03_creditcards', 'link_creditcards', 'q_03_creditcards_more', 
+		'q_04_reitrement', 'link_retirement', 'q_04_retirement_more', 
+		'q_05_investment', 'link_investment', 'q_05_investment_more', 
+		'q_06_mortgage', 'link_mortgage', 'q_06_mortgage_more', 
+		'q_07_other', 'link_other', 'q_07_other_more', 
+		'q_08_wallets', 'link_wallets', 'q_08_wallets_more', 
+		'q_09_thankyou', 'link_misc', 'q_09_thankyou',
+		'q_10_end'
+	)
+	# Please add the financial institution where you have {{ linkbox_text|safe }}.<br/>
+	linkbox_text_dict = {
+		'checking': 'a <strong>checking</strong> account',
+		'savings': 'a <strong>savings</strong> account', 
+		'creditcards': 'a <strong>credit card</strong> account', 
+		'retirement': 'a <strong>retirement</strong> account', 
+		'investment': 'an <strong>investment</strong> or <strong>brokerage</strong> account',
+		'mortgage': 'a <strong>mortgage</strong> account', 
+		'other': '<strong>another</strong> account',
+		'wallets': 'a <strong>digital</strong> wallet',
+	}
+
+	plaid_linkbox_title = None
+	linkbox_text = None
+	next_question = 'q_00_intro'
+	
+	# Fetching a list of all accounts (fin_accounts.p_subtype) this user has previously linked
+	account_p_subtypes = Fin_Accounts.objects.filter(item_id__user_id=user_id).exclude(item_id__deleted=1).values_list('p_subtype', flat=True).distinct()
+	prev_linked_acct_subtypes = [x for x in account_p_subtypes]
+	print(prev_linked_acct_subtypes)
+
+	user_actions = User_Actions.objects.filter(user_id=user_id).filter(action__contains="lnkScrn:").order_by('-date_created')[:1]
+	if not user_actions:
+		return plaid_linkbox_title, linkbox_text, next_question
+
+	last_action = user_actions[0].action
+	# Splitting the string in the format lnkScrn:q_01:checking_more:Yes
+	q = last_action.split(':')
+	last_q = q[1]
+	last_q_desc = q[2]
+	last_q_response = q[3]
+
+	print(f'Last Q: {last_q}')
+	print(f'Last Q desc: {last_q_desc}')
+	print(f'Last Q Response: {last_q_response}')
+
+	if last_q_response == 'Yes':
+
+		next_question = 'link'
+		if last_q in ['q_01_checking', 'q_01_checking_more']:
+			plaid_linkbox_title = 'checking'
+		elif last_q in ['q_02_savings', 'q_02_savings_more']:
+			plaid_linkbox_title = 'savings'
+		elif last_q in ['q_03_creditcards', 'q_03_creditcards_more']:
+			plaid_linkbox_title = 'creditcards'
+		elif last_q in ['q_04_retirement', 'q_04_retirement_more']:
+			plaid_linkbox_title = 'retirement'
+		elif last_q in ['q_05_investment', 'q_05_investment_more']:
+			plaid_linkbox_title = 'investment'
+		elif last_q in ['q_06_mortgage', 'q_06_mortgage_more']:
+			plaid_linkbox_title = 'mortgage'
+		elif last_q in ['q_07_other', 'q_07_other_more']:
+			plaid_linkbox_title = 'other'
+		elif last_q in ['q_08_wallets', 'q_08_wallets_more']:
+			plaid_linkbox_title = 'wallets'
+		elif last_q == 'q_09_thankyou':
+			plaid_linkbox_title = 'misc'
+		
+	elif last_q_response == 'No':
+
+		if last_q in ['q_01_checking', 'q_01_checking_more']:
+			
+			acct_subtypes = ['savings', 'cd', 'hsa', 'money market']
+			if any(x in prev_linked_acct_subtypes for x in acct_subtypes):
+				next_question = 'q_02_savings_more'
+			else:
+				next_question = 'q_02_savings'
+
+		elif last_q in ['q_02_savings', 'q_02_savings_more']:
+			
+			print(prev_linked_acct_subtypes)
+			acct_subtypes = ['credit card']
+			if any(x in prev_linked_acct_subtypes for x in acct_subtypes):
+				next_question = 'q_03_creditcards_more'
+				print("IN MEAW")
+			else:
+				next_question = 'q_03_creditcards'
+
+		elif last_q in ['q_03_creditcards', 'q_03_creditcards_more']:
+
+			acct_subtypes = ['prif', 'rrif', 'lif', 'lira', 'lrif', 'lrsp', 'rlif', 'rrsp', 'sipp', '401a', '401k', '403B', '457b', 'ira', 'non-taxable brokerage account', 'pension', 'retirement', 'roth', 'roth 401k', 'sep ira', 'simple ira', 'thrift savings plan', 'keogh', 'sarsep']
+			if any(x in prev_linked_acct_subtypes for x in acct_subtypes):
+				next_question = 'q_04_retirement_more'
+			else:
+				next_question = 'q_04_retirement'
+
+		elif last_q in ['q_04_retirement', 'q_04_retirement_more']:
+
+			acct_subtypes = ['rdsp', 'resp', 'tfsa', 'cash isa', 'gic', 'isa', '529', 'brokerage', 'education savings account', 'other', 'profit sharing plan', 'stock plan', 'trust', 'ugma', 'utma', 'variable annuity', 'mutual fund', 'recurring', 'hsa']
+			if any(x in prev_linked_acct_subtypes for x in acct_subtypes):
+				next_question = 'q_05_investment_more'
+			else:
+				next_question = 'q_05_investment'
+
+		elif last_q in ['q_05_investment', 'q_05_investment_more']:
+
+			acct_subtypes = ['mortgage']
+			if any(x in prev_linked_acct_subtypes for x in acct_subtypes):
+				next_question = 'q_06_mortgage_more'
+			else:
+				next_question = 'q_06_mortgage'
+
+		elif last_q in ['q_06_mortgage', 'q_06_mortgage_more']:	
+
+			acct_subtypes = ['health reimbursement arrangement', 'paypal_credit', 'prepaid', 'auto', 'commercial', 'construction', 'consumer', 'home', 'home equity', 'line of credit', 'loan', 'overdraft', 'student', 'other', 'prepaid', 'rewards', 'safe deposit']
+			if any(x in prev_linked_acct_subtypes for x in acct_subtypes):
+				next_question = 'q_07_other_more'
+			else:
+				next_question = 'q_07_other'
+
+		elif last_q in ['q_07_other', 'q_07_other_more']:
+
+			acct_subtypes = ['paypal']
+			if any(x in prev_linked_acct_subtypes for x in acct_subtypes):
+				next_question = 'q_08_wallets_more'
+			else:
+				next_question = 'q_08_wallets'
+
+		elif last_q in ['q_08_wallets', 'q_08_wallets_more']:
+
+			next_question = 'q_09_thankyou'
+
+		elif last_q in ['q_09_thankyou']:
+			
+			next_question = 'q_10_end'
+
+	else: # Continue
+		pos = link_screens.index(last_q)
+		try:
+			next_question = link_screens[pos+1]
+		except IndexError:
+			next_question = None
+
+	print(f'Next Question: {next_question} / Next Question Title: {plaid_linkbox_title}')
+	# TODO -> get linkbox_text
+	linkbox_text = linkbox_text_dict.get(plaid_linkbox_title, None)
+	return plaid_linkbox_title, linkbox_text, next_question

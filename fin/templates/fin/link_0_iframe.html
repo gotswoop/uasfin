@@ -19,12 +19,12 @@
 		});
 
 		var products = '{{ plaid_products }}'.split(',');
-    
+
 		var handler = Plaid.create({
 			apiVersion: 'v2',
 			clientName: 'UASFin',
 			env: '{{ plaid_environment }}',
-			product: products,
+			product: ['transactions','assets'],
 			key: '{{ plaid_public_key }}',
 			webhook: '{{ plaid_webhook_url }}',
 			onLoad: function() {
@@ -54,6 +54,7 @@
 				$.post("{% url 'plaid_link_onSuccess' %}", {
 					public_token: public_token,
 					metadata: JSON.stringify(metadata),
+					next_question: "{{next_question}}",
 				}, function(data) {
 					// Redirect to "link_account_result" view
 					window.top.location.replace("{% url 'link_account_result' %}");

@@ -1,30 +1,32 @@
 {% extends 'fin/base.html' %}
 {% block content %}
+{% load static %}
+{% load mathfilters %}
 {% load humanize %}
 
-<div><h2>{{ rewards.reward_link }} </h2><h2>{{ rewards.reward_monthly }} </h2></div>
-<div id="intro" class="border border border-success p-4	">
+<!--
+	WHAT IS THIS????
+	<div><h2>{{ rewards.reward_link }} </h2><h2>{{ rewards.reward_monthly }} </h2></div>
+
+-->
+
+<div id="intro" class="border border border-secondary p-4 m-4">
 	<h4>Welcome to the UASFin Study!</h4>
 	<hr/>
-	<p>To participate in this study, we are asking you to link your financial accounts to our secure website. This is done through Plaid, a company trusted by millions of consumers to help them securely manage their spending and saving.</p>
-
-	<p>The linking process is simple: 
-		<ol>
-		<li>Click on "Link Institution using Plaid"</li>
-		<li>Find your financial institution in the list, or search for it using the search box</li>
-		<li>Click on your financial institution logo</li>
-		<li>Enter your financial institution credentials and click "Submit"</li>
-		</ol>
-
-		Repeat steps 1-4 for each of your financial institutions. Once your financial institutions are linked, you will see all your accounts in one place.</p>
-
-	<p>For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }}, plus a reward of ${{ treatment.reward_monthly }} every month that the account remains active. The green box on the dashboard screen tells you the total monthly rewards you have earned as you link institutions.</p>
-
-	<p>Remember, <strong>UAS will NOT have access to your credentials or any other identifying information.</strong></p>
-
-	<p>Your financial information will be kept secure and protected. Plaid will never share your login IDs, passwords, or any other personal information with UAS researchers or anyone else.</p>
-
-	<a class="btn btn-lg btn-primary" href="{% url 'link_account' %}" role="button">Link Institution using Plaid</a>
+	<p>
+		To participate in this study, we are asking you to link your financial accounts to our secure website. This is done through <a href="https://plaid.com/what-is-plaid/" target="_blank">Plaid</a>, a company trusted by millions of users to help them securely manage their spending and saving.
+	</p>
+	<p>
+		<img class="float-left" src="/static/fin/lock.png" style="width:5vw;" />  
+		Your financial information will be kept secure and confidential. Plaid will never share your credentials (usernames and passwords for your financial institutions), with UAS researchers or anyone else. Remember, <strong>UAS will NOT have access to your credentials or any identifying information</strong> (except for what we keep on file to communicate with you, such as name, address and phone number).
+	</p>
+	<p>
+		As with all survey and research data, UAS will never store your personal identifiers or contact information with your financial data, nor will we share that information with researchers, or anyone else.
+	</p>
+	<p>
+		You will earn <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span> for each financial institution that you add. After that, you will continue to earn <span class="text-success font-weight-bold">$1</span> every month for each active institution. For example, if you add accounts from five of your institutions, you will earn <span class="text-success font-weight-bold">${{ treatment.reward_link|mul:5 }}</span> today, and <span class="text-success font-weight-bold">${{ treatment.reward_monthly|mul:5 }}</span> for every month your institutions remain linked. 
+	</p>
 	<br/>
+	<a class="btn btn-lg btn-primary" href="{% url 'add_account' %}" role="button">Continue</a>
 </div>
 {% endblock content %}

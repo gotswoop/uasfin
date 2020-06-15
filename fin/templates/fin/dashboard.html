@@ -3,15 +3,22 @@
 {% load humanize %}
 {% block content %}
 <div class="row">
-	<div class="col-md-8">
+	<div class="col-md-12">
 		<div class="card border bg-light">
+			<div class="card-header  bg-success text-white">
+				<div class="row">
+					<div class="col-md-12">
+						You have added <span class="text-white font-weight-bold">{{ items|length }}</span> financial institution{{ items|length|pluralize:",s" }}. You have earned <span class="text-white font-weight-bold">${% widthratio treatment.reward_link 1 items|length %}</span> for adding {{ items|length|pluralize:"this,these" }} institution{{ items|length|pluralize:",s" }}. You will earn <span class="text-white font-weight-bold">${% widthratio treatment.reward_monthly 1 items|length %}</span> for every month that {{ items|length|pluralize:"this,these" }} institution{{ items|length|pluralize:",s" }} remain{{ items|length|pluralize:"s," }} linked.
+					</div>	
+	    		</div>
+			</div>
 			<div class="card-header">
 				<div class="row">
-					<div class="col-md-6">
-						<span class="text btn btn-lg" disabled="true">{{ items|length }} Institution{% ifnotequal items|length 1 %}s{% endifnotequal %} Linked</span>
+					<div class="col-md-8">
+						<span class="text btn btn-lg" disabled="true">{{ items|length }} Institution{% ifnotequal items|length 1 %}s{% endifnotequal %} Linked ({{ items|length }} Active)</span>
 					</div>
-					<div class="col-md-6">
-						<a class="btn btn-lg btn-primary" href="{% url 'link_account' %}" role="button">Link More Institutions</a>
+					<div class="col-md-4">
+						<a class="btn btn-block btn-lg btn-primary" href="{% url 'add_account' %}" role="button">Link More Institutions</a>
 					</div>
 	    		</div>
 			</div>
@@ -31,20 +38,17 @@
 					{% endwith %}
 				{% endfor %}
 			</div>
-			<div class="card-footer">
-				You have {{ items|length }} financial institution{% ifnotequal items|length 1 %}s{% endifnotequal %} linked. For each institution you link, you earn a reward of ${{ treatment.reward_link }}, plus a reward of ${{ treatment.reward_monthly }} every month that the account remains active.
-			</div>
 		</div>
-		<br/><br/>
 	</div>
+	<!--
 	<div class="col-md-4">
 		<div class="card">
-			<div class="card-header bg-success text-white">
-				<h6>Number of Institutions Linked: {{ items|length }}</h6>
-				<h6>Monthly Rewards Earnings: {{ items|length }} x ${{treatment.reward_monthly}} = ${% widthratio treatment.reward_monthly 1 items|length %}</h6></div>
+			<div class="card-header bg-white text-white text-center">
+				<a class="btn btn-block btn-lg btn-primary" href="{% url 'add_account' %}" role="button">Link More Institutions</a>
+		</div>
 		 </div>
 		<div class="card mt-2">
-		  <div class="card-body border border-success">
+		  <div class="card-body border border-light">
 		    <p class="card-text">
 		    	These are the accounts often linked by other survey participants:
 				<ul>
@@ -63,5 +67,6 @@
 		  </div>
 		</div>
 	</div>
+	-->
 </div>
 {% endblock content %}

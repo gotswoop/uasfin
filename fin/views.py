@@ -18,7 +18,7 @@ from django.core import serializers
 from datetime import datetime, timedelta
 
 from fin.models import Fin_Items, Fin_Accounts, Fin_Accounts_History, Fin_Transactions, Plaid_Link_Logs, Plaid_Webhook_Logs, User_Actions, Users_With_Linked_Institutions
-from fin.functions import pretty_print_response, fetch_transactions_from_plaid, log_incoming_webhook, insert_transaction, format_error, log_user_actions, fetch_treatment, error_handler
+from fin.functions import *
 from users.models import User_Treatments, Treatments
 
 client = plaid.Client(client_id=settings.PLAID_CLIENT_ID, secret=settings.PLAID_SECRET, public_key=settings.PLAID_PUBLIC_KEY, environment=settings.PLAID_ENV, api_version='2018-05-22')
@@ -111,6 +111,9 @@ def link_account(request):
 		'title': "Link Institution",
 		'items': number_of_items,
 		'treatment': treatment,
+		'next_question': None,
+		'plaid_linkbox_title': None,
+		'linkbox_text': None,
 	}
 	return render(request, 'fin/link_1.html', context)
 
@@ -119,7 +122,7 @@ def link_account(request):
 # Link iframe (Plaid Link iframe code)
 # ------------------------------------------------------------------
 @login_required()
-def link_iframe(request):
+def link_iframe(request, next_question=""):
 
     # Configuring the webhook here..
     webhook_url = ('https://' if request.is_secure() else 'http://') + request.get_host() + '/' + settings.PLAID_WEBHOOK_URL
@@ -129,7 +132,8 @@ def link_iframe(request):
         'plaid_public_key': settings.PLAID_PUBLIC_KEY,
 	    'plaid_environment': settings.PLAID_ENV,
 	    'plaid_products': settings.PLAID_PRODUCTS,
-	    'plaid_webhook_url': webhook_url
+	    'plaid_webhook_url': webhook_url,
+	    'next_question': next_question,
     }
 
     return render(request, 'fin/link_0_iframe.html', context)
@@ -228,17 +232,27 @@ def plaid_relink_onExit(request):
 @login_required()
 def link_account_result(request):
 
+	accounts = None
 	referer_url = request.META.get('HTTP_REFERER')
 	check_url = ('https://' if request.is_secure() else 'http://') + request.get_host() + '/link/'
     
 	number_of_items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count()
     
 	recent_action = User_Actions.objects.filter(user_id = request.user, action__in=["link_item", "link_exit", "relink_item"]).order_by('-date_created').first()
-    
+
 	first_timer = 1
 	if Users_With_Linked_Institutions.objects.filter(user_id = request.user).count():
 		first_timer = 0
 
+	if recent_action.institution_id:
+		try:	
+			item_id = Fin_Items.objects.exclude(deleted=1).get(user_id=request.user, p_institution_id=recent_action.institution_id)
+		except Fin_Items.DoesNotExist:
+			item_id = None
+
+		if item_id:
+			accounts = Fin_Accounts.objects.filter(item_id=item_id)
+    
 	# Redirect to dashboard if there are no items OR there were no recent actions.
 	if recent_action == None and number_of_items == 0:
 		return redirect('home')
@@ -251,8 +265,9 @@ def link_account_result(request):
 		'title': 'Link Account - Result',
 		'items': number_of_items,
 		'recent_action': recent_action,
-		'first_timer': first_timer,
+		'accounts': accounts,
 		'treatment': treatment,
+		'first_timer': first_timer,
 	}
 	return render(request, 'fin/link_2_result.html', context)
     
@@ -333,6 +348,7 @@ def plaid_link_onSuccess(request):
   
 	public_token = request.POST.get('public_token', '')
 	metadata = request.POST.get('metadata', '')
+	next_question = request.POST.get('next_question', '')
 	
 	# TODO: This will fail if metadata is blank
 	metadata = json.loads(metadata)
@@ -400,6 +416,9 @@ def plaid_link_onSuccess(request):
 		
 		log_user_actions(request, "link_item", item_response.get('item').get('institution_id'), institution_response.get('institution').get('name'), 
 			None, None, metadata.get('link_session_id'))
+		if next_question:
+			action = 'lnkScrn:' + next_question + ':' + next_question + ':Continue'
+			log_user_actions(request, action, None, None, None, None, None)
 		
 		# Get item_accounts and insert into database.
 		try:
@@ -681,3 +700,142 @@ def unlink_account(request, item_id):
 		return render(request, 'fin/unlink_warning.html', context)
     	
 	
+# ------------------------------------------------------------------
+# Add Account (Plaid Link accout page that embeds ifram with instructions on right )
+# ------------------------------------------------------------------
+@login_required()
+@require_http_methods(["GET", "POST"])
+def add_account(request):
+
+	# Fetching number of institutions a user has and treatment
+	number_of_items = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).count()
+	treatment = fetch_treatment(request.user.id)
+	if not treatment:
+		return HttpResponse(status=500)
+
+	# GET Method
+	if request.method == 'GET':
+
+		# Fetch next question
+		plaid_linkbox_title, linkbox_text, next_question = next_account_linking_question(request.user.id)
+		item_ids = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).prefetch_related('fin_accounts_set').all()
+		context = {
+			'title': "Link Institution",
+			'items': number_of_items,
+			'treatment': treatment,
+			'next_question': next_question,
+			'plaid_linkbox_title': plaid_linkbox_title,
+			'linkbox_text': linkbox_text,
+			'item_ids': item_ids,
+		}
+	
+		if next_question == None:
+			return render(request, 'fin/link_1.html', context)
+		elif next_question == 'q_09_thankyou':
+			return render(request, 'fin/q_09_thankyou.html', context)
+		elif next_question == 'q_10_end':
+			return render(request, 'fin/q_10_end.html', context)
+		elif next_question == 'link':
+			return render(request, 'fin/link_1.html', context)
+		else:
+			return render(request, 'fin/add.html', context)	
+		
+	# POST Method
+	elif request.method == 'POST':
+		
+		question = request.POST.get("question", "")
+		question_desc = request.POST.get("question_desc", "")
+		question_response = request.POST.get("question_response", "")
+		
+		# Save user response
+		action = 'lnkScrn:' + question + ':' + question_desc + ':' + question_response
+		log_user_actions(request, action, None, None, None, None, None)
+		
+		context = {
+			'dummy': None,
+		}
+		return JsonResponse(context)
+	else:
+		# TODO
+		pass
+
+# Used only by the summary page and all done page
+@login_required()
+@require_http_methods(["POST"])
+def add_account_plus(request):
+
+	if request.method == 'POST':
+		
+		question = request.POST.get("question", "")
+		question_desc = request.POST.get("question_desc", "")
+		question_response = request.POST.get("question_response", "")
+		
+		# Making an entry in the users_with_linked_institutions table 
+		updated_item, new_item = Users_With_Linked_Institutions.objects.update_or_create(user_id = request.user, defaults={'user_id': request.user})
+
+		# Save user response
+		action = 'lnkScrn:' + question + ':' + question_desc + ':' + question_response
+		log_user_actions(request, action, None, None, None, None, None)
+		
+		if question_response == 'Continue': # this is from the last page
+			return redirect('home')
+		else: # This is from the summary page
+			return redirect('add_account')
+	else:
+		pass
+
+
+# ------------------------------------------------------------------
+# Reset account - Unline and reset. Used for testing for Fin Health Network and USC
+# ------------------------------------------------------------------
+@login_required()
+def reset_account(request):
+	
+	# Only allow cesr_team and cfsi_team members
+	if not request.user.groups.filter(name__in=['cesr_team','cfsi_team']).exists():
+		messages.warning(request, format('Only staff can unlink accounts.'))
+		return redirect('profile')
+	
+	try:
+		# Checking if user deleting is the owner
+		# Get all items owned by users
+		items = Fin_Items.objects.exclude(deleted = 1).filter(user_id = request.user)
+	except Fin_Items.DoesNotExist:
+		items = None
+
+	# deleteing all accounts
+	for item in items:
+		try:
+			response = client.Item.remove(item.p_access_token)
+		except plaid.errors.PlaidError as e:
+			print("ARGH!!")
+			return JsonResponse(format_error(e))
+
+		if response['removed'] == True:
+			# Updating Fin_Items and flagging this account as deleted.
+			item.p_access_token = None # Setting access_token to null
+			item.deleted = 1
+			item.deleted_date = datetime.now()
+			item.save(update_fields=['p_access_token','deleted','deleted_date'])
+
+			# Recording this event in user actions
+			new_action = User_Actions.objects.create(
+				user_id = request.user,
+				user_ip = request.META.get('REMOTE_ADDR'),
+				action = "unlink_item",
+				institution_id = item.p_institution_id,
+				institution_name = item.p_item_name
+			)
+		else:
+			messages.warning(request, format('Something went wrong. Please report to help desk.'))
+			return redirect('profile')
+
+	Fin_Transactions.objects.filter(account_id__item_id__user_id=request.user).delete()
+	Fin_Accounts.objects.filter(item_id__user_id=request.user).delete()
+	Fin_Accounts_History.objects.filter(item_id__user_id=request.user).delete()
+	Fin_Items.objects.filter(user_id=request.user).delete()
+	User_Actions.objects.filter(user_id=request.user).delete()
+	Users_With_Linked_Institutions.objects.filter(user_id=request.user).delete()
+
+	messages.warning(request, format('All accounts unlinked and account reset for testing.'))		
+	return redirect('home')

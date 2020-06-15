@@ -7,18 +7,37 @@
 	min-height:596px;
 }
 </style>
+<script>
+	var next_question = "{{next_question}}_{{plaid_linkbox_title}}";
+	console.log(next_question);
+</script>
 <div class="row">
-	<div class="col-md-7">
+	<div class="col-md-12 text-center">
+		{% if linkbox_text %}
+			Please add the financial institution where you have {{ linkbox_text|safe }}.<br/>
+			(This will also connect other accounts you have at this institution.)
+			{{ link_type }}
+		{% endif %}
+	</div>
+	<div class="col-md-12">
 		<div class="embed-responsive embed-responsive-custom">
-			<iframe class="embed-responsive-item" src="{% url 'link_iframe' %}"></iframe>
+			{% if next_question and plaid_linkbox_title %}
+				<iframe class="embed-responsive-item" src="{% url 'link_iframe' next_question=next_question|add:'_'|add:plaid_linkbox_title %}"></iframe>
+			{% else %}
+				<iframe class="embed-responsive-item" src="{% url 'link_iframe' %}"></iframe>
+			{% endif %}
 		</div>
 	</div>
+	<!--
 	<div class="col-md-5">
 		<div class="card mt-5">
-			<div class="card-header">
-				<h5><span class="text-dark">Institution Linking Steps</span></h5>
+			<div class="card-header bg-success text-white">
+				<h6>Total Number of Institutions Linked: {{ items }}</h6>
+				<h6>Total Rewards for Linking: ${% widthratio treatment.reward_link 1 items %}</h6>
+				<h6>Total Monthly Rewards Earnings: ${% widthratio treatment.reward_monthly 1 items %}</h6>
 			</div>
 			<div class="card-body">
+				<h5><span class="text-dark">Institution Linking Steps</span></h5>
 				<p>
 				<ol>
 					<li>Click "Get Started"</li>
@@ -37,5 +56,6 @@
 			</div>
 		</div>
 	</div>
+	-->
 </div>
 {% endblock content %}

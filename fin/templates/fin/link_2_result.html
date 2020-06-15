@@ -2,17 +2,36 @@
 {% block content %}
 {% load humanize %}
 <div class="row">
-	<div class="col-md-8">
+	<div class="col-md-12">
 		<div class="card mb-3">
 			<div class="card-body">
 				{% if recent_action.error_code == None %}
 		  			{% if recent_action.action == "relink_item" %}
 		  				<h4 id="success_summary" class="card-title text-success">Your account was successfully re-linked to UASFin!</h4>
-			  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }}, plus a reward of ${{ treatment.reward_monthly }}  every month that the account remains active.</p>
+			  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> every month that the account remains active.</p>
 		  			{% else %}
-		  				<h4 id="success_summary" class="card-title text-success"><strong>{{ recent_action.institution_name }}</strong> was successfully linked to UASFin!</h4>
-			  			<p class="card-text pt-2">Would you like to link another institution?</p>
-			  			<p class="card-text pt-2">For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }}, plus a reward of ${{ treatment.reward_monthly }} every month that the account remains active.</p>
+		  				<h3 id="success_summary" class="card-title text-success">
+		  					Congratulations!
+		  				</h3>
+
+						<p class="card-text pt-2">You’ve added the following accounts at <span class="h4 text-info">{{ recent_action.institution_name }}</span>.
+							<table class="table table-sm">
+								<thead><tr><th>#</th><th>Account Name</th><th>Account Type</th></tr></thead>
+								<tbody>
+							{% for account in accounts %}
+								<tr><td>{{ forloop.counter }}.</td><td>{{ account.p_name }}</td><td>{{ account.p_subtype|capfirst }}</td></tr>
+							{% endfor %}
+								</tbody>
+							</table>
+							<small>(If any of these accounts are not yours, you can remove them later.)</small>
+						</p>
+						<p>
+							You have added <span class="text-dark font-weight-bold">{{ items }}</span> financial institution{{ items|pluralize:",s" }}. You have earned <span class="text-success font-weight-bold">${% widthratio treatment.reward_link 1 items %}</span> for adding {{ items|pluralize:"this,these" }} institution{{ items|pluralize:",s" }}. You will earn <span class="text-success font-weight-bold">${% widthratio treatment.reward_monthly 1 items %}</span> for every month that {{ items|pluralize:"this,these" }} institution{{ items|pluralize:",s" }} remain{{ items|pluralize:"s," }} linked.
+						</p>
+						<p>
+							You can earn more money by continuing to add institutions.					
+						</p>
+
 		  			{% endif %}
 
 		  		{% elif recent_action.error_code == "DUPLICATE_INSTITUTION_PREVIOUSLY_DELETED" %}
@@ -20,32 +39,48 @@
 	  				<h4 id="failure_summary" class="card-title text-danger"><strong> {{ recent_action.institution_name }} </strong> was previously linked and removed</h4>
 	  				<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Would%20like%20to%20re-link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you would like to re-link <strong>{{ recent_action.institution_name }}</strong>.</p>
   					<p class="card-text pt-2">Would you like to link a different institution?</p>
-  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }}, plus a reward of ${{ treatment.reward_monthly }} every month that the account remains active.</p>
+  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> every month that the account remains active.</p>
 
 		  		{% elif recent_action.error_code == "DUPLICATE_INSTITUTION" %}
 		  			
 		  			<h4 id="failure_summary" class="card-title text-danger"><strong> {{ recent_action.institution_name }} </strong> was previously linked</h4>
   					<p class="card-text pt-2">Would you like to link a different institution?</p>
-  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }}, plus a reward of ${{ treatment.reward_monthly }} every month that the account remains active.</p>
+  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> every month that the account remains active.</p>
 
 		  		{% elif recent_action.error_code == "USER_EXITED_PLAID_LINK" %}
 		  			
 		  			<h4 id="failure_summary" class="card-title text-info"><strong>You quit the account linking process</strong></h4>
   					<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Unable%20to%20link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you are experiencing issues with finding or linking your institution.</p>
-  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }}, plus a reward of ${{ treatment.reward_monthly }} every month that the account remains active.</p>
+  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> every month that the account remains active.</p>
   					<p class="card-text pt-2">Would like to try again?</p>
 
 		  		{% elif recent_action.error_code == "INVALID_CREDENTIALS" %}
 		  			
-		  			<h4 id="failure_summary" class="card-title text-danger">The credentials for your <strong>{{ recent_action.institution_name }}</strong> account were incorrect</h4>
+		  			<h4 id="failure_summary" class="card-title text-danger">The credentials for your <strong>{{ recent_action.institution_name }}</strong> account are incorrect</h4>
   					<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Unable%20to%20link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you are experiencing issues linking your <strong>{{ recent_action.institution_name }}</strong> account.</p>
-  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of ${{ treatment.reward_link }}, plus a reward of ${{ treatment.reward_monthly }} every month that the account remains active.</p>
+  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> every month that the account remains active.</p>
   					<p class="card-text pt-2">Would like to try linking <strong>{{ recent_action.institution_name }}</strong> again?</p>
 
 		  		{% endif %}
 		  	</div>
 		</div>
 		<p>
+			{% if first_timer %}
+				<a class="btn btn-lg btn-primary mt-2 mr-3" href="{% url 'add_account' %}" role="button">Link More Institutions</a>
+				<!--
+				<form action="/add/" method="post">{% csrf_token %}
+					<button class="btn btn-lg btn-primary mr-2" type="submit" name="question_response" value="No">Skip</button>
+					<input type="hidden" id="question" name="question" value="link">
+					<input type="hidden" id="question_desc" name="question_desc" value="No">
+				</form>
+				-->
+				{{ next_question }}
+            {% else %}
+                <a class="btn btn-lg btn-primary mt-2 mr-3" href="{% url 'add_account' %}" role="button">Link Institution</a>
+                <a class="btn btn-lg btn-primary mt-2 mr-3" href="{% url 'home' %}" role="button">Quit Linking Process</a>
+            {% endif %}
+			
+			<!--
 			{% if recent_action.error_code == "USER_EXITED_PLAID_LINK" or recent_action.error_code == "INVALID_CREDENTIALS" %}
 				<a class="btn btn-lg btn-primary mt-2 mr-3" href="{% url 'link_account' %}" role="button">Link Institution</a>
 			{% else %}
@@ -56,33 +91,18 @@
 			{% else %}
 				<a class="link-btn-no btn btn-lg btn-outline-info mt-2" href="{% url 'home' %}" role="button">No</a>
 			{% endif %}
+			-->
 		</p>
 	</div>
+	<!--
 	<div class="col-md-4">
 		<div class="card">
 			<div class="card-header bg-success text-white">
-				<h6>Number of Institutions Linked: {{ items }}</h6>
-				<h6>Monthly Rewards Earnings: {{ items }} x ${{treatment.reward_monthly}} = ${% widthratio treatment.reward_monthly 1 items %}</h6></div>
+				<h6>Total Number of Institutions Linked: {{ items }}</h6>
+				<h6>Total Rewards for Linking: ${% widthratio treatment.reward_link 1 items %}</h6>
+				<h6>Total Monthly Rewards Earnings: ${% widthratio treatment.reward_monthly 1 items %}</h6>
+			</div>
 		 </div>
-		<div class="card mt-2">
-		  <div class="card-body border border-success">
-		    <p class="card-text">
-		    	These are the accounts often linked by other survey participants:
-				<ul>
-				<li>Checking Accounts</li>
-				<li>Savings Accounts</li>
-				<li>Credit Cards</li>
-				<li>Prepaid Cards</li>
-				<li>Long-term Savings Accounts</li>
-				<li>Mortgages</li>
-				<li>Home Equity Line of Credit (HELOC)</li>
-				<li>Retirement Accounts (401k, 403(b), IRA, and similar)</li> 
-				<li>Brokerage Accounts</li>
-				</ul>
-				Have you forgotten to link any of your accounts?
-			</p>
-		  </div>
-		</div>
-	</div>
-</div>
+		-->
+		
 {% endblock content %}

@@ -1,4 +1,5 @@
 {% extends "fin/base.html" %}
+{% load static %}
 {% load crispy_forms_tags %}
 {% block content %}
 <div class="content-section">
@@ -40,8 +41,8 @@
         				</button>
       				</div>
 					<div class="modal-body">
-        				<img src="/screens/panel_dashboard_consent_yes.png" class="img-responsive" width="100%">
-    				</div>
+        				<img src="{% static 'help/screenshots/panel_dashboard_consent_yes.png' %}" class="img-responsive" width="100%">
+        			</div>
 				</div>
 			</div>
 		</div>
@@ -55,7 +56,7 @@
         				</button>
       				</div>
 					<div class="modal-body">
-        				<img src="/screens/password_reset.png" class="img-responsive" width="100%">
+        				<img src="{% static 'help/screenshots/password_reset.png' %}" class="img-responsive" width="100%">
     				</div>
 				</div>
 			</div>
