@@ -9,7 +9,7 @@ from django.db import IntegrityError
 
 wave = 3
 # panel_file = 'wave2_plaid_sample_18June2019.csv'
-panel_file = 'wave3_plaid_final_sample_4June2020.csv'
+panel_file = 'wave3_import.csv'
 
 with open(panel_file, 'r') as f:
 	reader = csv.reader(f)
