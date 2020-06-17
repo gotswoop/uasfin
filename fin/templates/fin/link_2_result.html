@@ -8,7 +8,7 @@
 				{% if recent_action.error_code == None %}
 		  			{% if recent_action.action == "relink_item" %}
 		  				<h4 id="success_summary" class="card-title text-success">Your account was successfully re-linked to UASFin!</h4>
-			  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> every month that the account remains active.</p>
+			  			<p class="card-text pt-2">Would you like to link another institution?<br/><br/>For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> for every month your institution remains linked.</p>
 		  			{% else %}
 		  				<h3 id="success_summary" class="card-title text-success">
 		  					Congratulations!
@@ -39,26 +39,26 @@
 	  				<h4 id="failure_summary" class="card-title text-danger"><strong> {{ recent_action.institution_name }} </strong> was previously linked and removed</h4>
 	  				<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Would%20like%20to%20re-link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you would like to re-link <strong>{{ recent_action.institution_name }}</strong>.</p>
   					<p class="card-text pt-2">Would you like to link a different institution?</p>
-  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> every month that the account remains active.</p>
+  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> for every month your institution remains linked.</p>
 
 		  		{% elif recent_action.error_code == "DUPLICATE_INSTITUTION" %}
 		  			
 		  			<h4 id="failure_summary" class="card-title text-danger"><strong> {{ recent_action.institution_name }} </strong> was previously linked</h4>
   					<p class="card-text pt-2">Would you like to link a different institution?</p>
-  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> every month that the account remains active.</p>
+  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> for every month your institution remains linked.</p>
 
 		  		{% elif recent_action.error_code == "USER_EXITED_PLAID_LINK" %}
 		  			
 		  			<h4 id="failure_summary" class="card-title text-info"><strong>You quit the account linking process</strong></h4>
   					<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Unable%20to%20link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you are experiencing issues with finding or linking your institution.</p>
-  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> every month that the account remains active.</p>
+  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> for every month your institution remains linked.</p>
   					<p class="card-text pt-2">Would like to try again?</p>
 
 		  		{% elif recent_action.error_code == "INVALID_CREDENTIALS" %}
 		  			
 		  			<h4 id="failure_summary" class="card-title text-danger">The credentials for your <strong>{{ recent_action.institution_name }}</strong> account are incorrect</h4>
   					<p class="card-text pt-2">Please <a href="mailto:uashelp@usc.edu?subject=[UASFin]%20Unable%20to%20link%20account&body=Support Token (please do not delete): {{ recent_action.p_link_session_id }}%0A%0DPlease%20provide%20more%20details%20here"><strong>contact us</strong></a> if you are experiencing issues linking your <strong>{{ recent_action.institution_name }}</strong> account.</p>
-  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> every month that the account remains active.</p>
+  					<p class="card-text pt-2">For each financial institution you link, you will earn a reward of <span class="text-success font-weight-bold">${{ treatment.reward_link }}</span>, plus a reward of <span class="text-success font-weight-bold">${{ treatment.reward_monthly }}</span> for every month your institution remains linked.</p>
   					<p class="card-text pt-2">Would like to try linking <strong>{{ recent_action.institution_name }}</strong> again?</p>
 
 		  		{% endif %}
