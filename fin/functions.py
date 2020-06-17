@@ -256,14 +256,14 @@ def next_account_linking_question(user_id):
 	)
 	# Please add the financial institution where you have {{ linkbox_text|safe }}.<br/>
 	linkbox_text_dict = {
-		'checking': 'a <strong>checking</strong> account',
-		'savings': 'a <strong>savings</strong> account', 
-		'creditcards': 'a <strong>credit card</strong> account', 
-		'retirement': 'a <strong>retirement</strong> account', 
-		'investment': 'an <strong>investment</strong> or <strong>brokerage</strong> account',
-		'mortgage': 'a <strong>mortgage</strong> account', 
-		'other': '<strong>another</strong> account',
-		'wallets': 'a <strong>digital</strong> wallet',
+		'checking': 'Please add the financial institution where you have a <strong>checking</strong> account',
+		'savings': 'Please add the financial institution where you have a <strong>savings</strong> account',
+		'creditcards': 'Please add the financial institution where you have a <strong>credit card</strong>',
+		'retirement': 'Please add the financial institution where you have a <strong>retirement</strong> account',
+		'investment': 'Please add the financial institution where you have an <strong>investment</strong> or <strong>brokerage</strong> account',
+		'mortgage': 'Please add the financial institution where you have a <strong>mortgage</strong> account',
+		'other': 'Please add the financial institution where you have <strong>another</strong> account',
+		'wallets': 'Please add the company where you have a <strong>digital</strong> wallet',
 	}
 
 	plaid_linkbox_title = None

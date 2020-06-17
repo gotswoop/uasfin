@@ -4,18 +4,11 @@
 {% block content %}
 <div class="row">
 	<div class="col-md-12">
-		<div class="card border bg-light">
-			<div class="card-header  bg-success text-white">
-				<div class="row">
-					<div class="col-md-12">
-						You have added <span class="text-white font-weight-bold">{{ items|length }}</span> financial institution{{ items|length|pluralize:",s" }}. You have earned <span class="text-white font-weight-bold">${% widthratio treatment.reward_link 1 items|length %}</span> for adding {{ items|length|pluralize:"this,these" }} institution{{ items|length|pluralize:",s" }}. You will earn <span class="text-white font-weight-bold">${% widthratio treatment.reward_monthly 1 items|length %}</span> for every month that {{ items|length|pluralize:"this,these" }} institution{{ items|length|pluralize:",s" }} remain{{ items|length|pluralize:"s," }} linked.
-					</div>	
-	    		</div>
-			</div>
+		<div class="card border">
 			<div class="card-header">
 				<div class="row">
 					<div class="col-md-8">
-						<span class="text btn btn-lg" disabled="true">{{ items|length }} Institution{% ifnotequal items|length 1 %}s{% endifnotequal %} Linked ({{ items|length }} Active)</span>
+						You have added <span class="text-dark font-weight-bold">{{ items|length }}</span> financial institution{{ items|length|pluralize:",s" }}. You have earned <span class="text-success font-weight-bold">${% widthratio treatment.reward_link 1 items|length %}</span> for adding {{ items|length|pluralize:"this,these" }} institution{{ items|length|pluralize:",s" }}. You will earn <span class="text-success font-weight-bold">${% widthratio treatment.reward_monthly 1 items|length %}</span> for every month that {{ items|length|pluralize:"this,these" }} institution{{ items|length|pluralize:",s" }} remain{{ items|length|pluralize:"s," }} linked.
 					</div>
 					<div class="col-md-4">
 						<a class="btn btn-block btn-lg btn-primary" href="{% url 'add_account' %}" role="button">Link More Institutions</a>

@@ -14,7 +14,7 @@
 <div class="row">
 	<div class="col-md-12 text-center">
 		{% if linkbox_text %}
-			Please add the financial institution where you have {{ linkbox_text|safe }}.<br/>
+			{{ linkbox_text|safe }}.<br/>
 			(This will also connect other accounts you have at this institution.)
 			{{ link_type }}
 		{% endif %}
