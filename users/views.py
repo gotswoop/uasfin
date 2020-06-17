@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 from django.shortcuts import redirect
 from fin.models import Fin_Items
@@ -45,6 +46,7 @@ def profile(request):
 		'internal_staff': internal_staff,
 		'treatment': treatment,
 		'accounts': user_institutions,
+		'plaid_env': settings.PLAID_ENV,
 	}
     
 	return render(request, 'users/profile.html', context)

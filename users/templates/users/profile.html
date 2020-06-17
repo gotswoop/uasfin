@@ -13,10 +13,13 @@
 	    <h3 class="card-title">{{ user.username }}</h3>
 	    <p class="card-text">
 			{% if internal_staff %} 
-				<h6 class="text-success font-weight-bold">CESR / FinHealthNetwork Team Member</h6>
-				<a class="btn btn-sm btn-warning mr-2 disabled" href="{% url 'panel_home' %}" role="button">Metrics Dashboard</a>
-				<a class="btn btn-sm btn-danger" href="{% url 'reset_account' %}" role="button">Unlink All Accounts and Reset (for testing)</a>
-				<!--<small>* The metrics dashboard is only accessible from USC VPN or VPD network.</small>-->
+				<h6 class="text-success font-weight-bold">CESR / FHN Team Member</h6>
+				<a class="btn btn-sm btn-warning mr-2" href="{% url 'panel_home' %}" role="button">Metrics Dashboard</a>
+				{% if plaid_env != "production" %}
+					<a class="btn btn-sm btn-danger" href="{% url 'reset_account' %}" role="button">Unlink All Accounts and Reset (for testing)</a>
+				{% endif %}
+				<br/>
+				<small>* The metrics dashboard is only accessible from USC VPN or VPD network.</small>
 				<hr/>
 			{% endif %}
 	    </p>
