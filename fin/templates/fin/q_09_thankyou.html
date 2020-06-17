@@ -4,21 +4,22 @@
 	<div class="p-4 mb-3">
 	  	<h4>Thank you for participating in this study.</h4>
 	  	{% if item_ids %}
-		    <p class="pt-2">You’ve added:
+		    <p class="pt-2">You’ve added:<br/>
+		    	<span class="text-secondary small">*Click institution name to view/hide account list</span>
 		    	<div class="accordion" id="accordionExample">
 		    	{% for item_id in item_ids %}
 		    	<div class="card">
     				<div class="card-header" id="heading{{forloop.counter}}">
       					<h2 class="mb-0">
         				<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{forloop.counter}}" aria-expanded="true" aria-controls="collapse{{forloop.counter}}">
-          				{{ forloop.counter }}. {{ item_id.p_item_name }}
+          				{{ forloop.counter }}. {{ item_id.p_item_name }} 
         				</button>
       					</h2>
     				</div>
     				{% if forloop.counter == 1 %}
-    					<div id="collapse{{forloop.counter}}" class="panel-title collapse show" aria-labelledby="heading{{forloop.counter}}" data-parent="#accordionExample">
+						<div id="collapse{{forloop.counter}}" class="collapse show" aria-labelledby="heading{{forloop.counter}}" data-parent="#accordionExample">
     				{% else %}
-    					<div id="collapse{{forloop.counter}}" class="panel-title collapse" aria-labelledby="heading{{forloop.counter}}" data-parent="#accordionExample">
+						<div id="collapse{{forloop.counter}}" class="collapse" aria-labelledby="heading{{forloop.counter}}" data-parent="#accordionExample">
     				{% endif %}
       					<div class="card-body">
       					<ul>
