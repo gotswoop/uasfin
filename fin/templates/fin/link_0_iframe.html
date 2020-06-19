@@ -70,6 +70,7 @@
 				$.post("{% url 'plaid_link_onExit' %}", {
 					error: JSON.stringify(err),
 					metadata: JSON.stringify(metadata),
+					next_question: "{{next_question}}",
 				}, function(data) {
 					// Redirect to "link_account_result" view
 					window.top.location.replace("{% url 'link_account_result' %}");

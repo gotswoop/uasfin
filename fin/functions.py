@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # Fetch Transactions for an item from PLAID
 # ------------------------------------------------------------------
 def fetch_transactions_from_plaid(client, item):
-  
+
 	# Pull 300 (default) transactions for the last 1460 days (4 years)
 	start_date = '{:%Y-%m-%d}'.format(datetime.now() + timedelta(days=-1460))
 	end_date = '{:%Y-%m-%d}'.format(datetime.now())
@@ -64,9 +64,9 @@ def fetch_transactions_from_plaid(client, item):
 			else:
 				msg = '# ERROR: Cannot find the corresponding account that we are trying to add transactions into Account_id = ' + account_id
 				error_handler(msg)
-  
+
 		if first_iteration:
-  			
+
 			remaining_transactions = incoming_transactions - count
 			first_iteration = False
 
@@ -120,7 +120,7 @@ def log_incoming_webhook(incoming, remote_ip):
 			remote_ip = remote_ip,
 			p_webhook_type = incoming.get('webhook_type'),
 			p_webhook_code = incoming.get('webhook_code'),
-			p_item_id  = incoming.get('item_id'),
+			p_item_id = incoming.get('item_id'),
 			p_error = _error,
 			p_new_transactions = incoming.get('new_transactions'),
 			p_removed_transactions = incoming.get('removed_transactions'),
@@ -183,7 +183,7 @@ def insert_transaction(fin_accounts_obj, transaction):
 			'p_payment_meta_payment_method': transaction.get('payment_meta').get('payment_method'),
 			'p_payment_meta_payment_processor': transaction.get('payment_meta').get('payment_processor'),
 			'p_payment_meta_ppd_id': transaction.get('payment_meta').get('ppd_id'),
-			'p_payment_meta_reason':  transaction.get('payment_meta').get('reason'),
+			'p_payment_meta_reason': transaction.get('payment_meta').get('reason'),
 			'p_payment_meta_reference_number': transaction.get('payment_meta').get('reference_number'),
 			'p_pending': transaction.get('pending'),
 			'p_pending_transaction_id': transaction.get('pending_transaction_id'),
@@ -246,7 +246,7 @@ def next_account_linking_question(user_id):
 		'q_01_checking', 'link_checking', 'q_01_checking_more', 
 		'q_02_savings', 'link_savings', 'q_02_savings_more', 
 		'q_03_creditcards', 'link_creditcards', 'q_03_creditcards_more', 
-		'q_04_reitrement', 'link_retirement', 'q_04_retirement_more', 
+		'q_04_retirement', 'link_retirement', 'q_04_retirement_more',
 		'q_05_investment', 'link_investment', 'q_05_investment_more', 
 		'q_06_mortgage', 'link_mortgage', 'q_06_mortgage_more', 
 		'q_07_other', 'link_other', 'q_07_other_more', 
@@ -263,7 +263,8 @@ def next_account_linking_question(user_id):
 		'investment': 'Please add the financial institution where you have an <strong>investment</strong> or <strong>brokerage</strong> account',
 		'mortgage': 'Please add the financial institution where you have a <strong>mortgage</strong> account',
 		'other': 'Please add the financial institution where you have <strong>another</strong> account',
-		'wallets': 'Please add the company where you have a <strong>digital</strong> wallet',
+		'wallets': 'Please add the company where you have a <strong>digital wallet</strong>',
+		'misc': 'Please add the financial institution where you have <strong>another</strong> account',
 	}
 
 	plaid_linkbox_title = None
@@ -273,22 +274,21 @@ def next_account_linking_question(user_id):
 	# Fetching a list of all accounts (fin_accounts.p_subtype) this user has previously linked
 	account_p_subtypes = Fin_Accounts.objects.filter(item_id__user_id=user_id).exclude(item_id__deleted=1).values_list('p_subtype', flat=True).distinct()
 	prev_linked_acct_subtypes = [x for x in account_p_subtypes]
-	print(prev_linked_acct_subtypes)
+	# print(prev_linked_acct_subtypes)
 
 	user_actions = User_Actions.objects.filter(user_id=user_id).filter(action__contains="lnkScrn:").order_by('-date_created')[:1]
 	if not user_actions:
 		return plaid_linkbox_title, linkbox_text, next_question
 
 	last_action = user_actions[0].action
-	# Splitting the string in the format lnkScrn:q_01:checking_more:Yes
+	# Splitting the string in the format lnkScrn:q_02_checking:Yes
 	q = last_action.split(':')
 	last_q = q[1]
-	last_q_desc = q[2]
-	last_q_response = q[3]
+	last_q_response = q[2]
 
-	print(f'Last Q: {last_q}')
-	print(f'Last Q desc: {last_q_desc}')
-	print(f'Last Q Response: {last_q_response}')
+	# print(f'Last action: {last_action}')
+	# print(f'Last Q: {last_q}')
+	# print(f'Last Q Response: {last_q_response}')
 
 	if last_q_response == 'Yes':
 
@@ -324,11 +324,9 @@ def next_account_linking_question(user_id):
 
 		elif last_q in ['q_02_savings', 'q_02_savings_more']:
 			
-			print(prev_linked_acct_subtypes)
 			acct_subtypes = ['credit card']
 			if any(x in prev_linked_acct_subtypes for x in acct_subtypes):
 				next_question = 'q_03_creditcards_more'
-				print("IN MEAW")
 			else:
 				next_question = 'q_03_creditcards'
 
@@ -380,14 +378,47 @@ def next_account_linking_question(user_id):
 			
 			next_question = 'q_10_end'
 
-	else: # Continue
-		pos = link_screens.index(last_q)
+	elif last_q_response == 'Retry':
+
+		# Splitting string such as 'link_savings'
+		retry_q = last_q.split('_')
+		next_question = 'link' # OR = retry_q[0]
+		plaid_linkbox_title = retry_q[1]
+
+	elif last_q_response == 'Skip':
+
 		try:
-			next_question = link_screens[pos+1]
-		except IndexError:
+			pos = link_screens.index(last_q)
+		except ValueError:
+			pos = None
+
+		if not (pos is None):
+			try:
+				next_question = link_screens[pos+2]
+			except IndexError:
+				next_question = None
+		else:
 			next_question = None
 
-	print(f'Next Question: {next_question} / Next Question Title: {plaid_linkbox_title}')
-	# TODO -> get linkbox_text
+		# Forcing condition to make sure they don't skip the summary screen
+		if next_question == 'q_10_end':
+			next_question = 'q_09_thankyou'
+
+	else: # Continue, Finish, & Exit (during the edge case where they X the plaid link box, then click on Dashboard link on the top and click on Link institutions)
+
+		try:
+			pos = link_screens.index(last_q)
+		except ValueError:
+			pos = None
+
+		if not (pos is None):
+			try:
+				next_question = link_screens[pos+1]
+			except IndexError:
+				next_question = None
+		else:
+			next_question = None
+
+	# print(f'Next Question: {next_question} / Next Question Title: {plaid_linkbox_title}')
 	linkbox_text = linkbox_text_dict.get(plaid_linkbox_title, None)
 	return plaid_linkbox_title, linkbox_text, next_question

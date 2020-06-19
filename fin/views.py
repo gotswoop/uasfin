@@ -66,6 +66,13 @@ def plaid_link_onExit(request):
     error = request.POST.get('error', '')
     metadata = request.POST.get('metadata', '')
     
+    next_question = request.POST.get('next_question', '')
+    question_response = 'Exit'
+
+	# Save user's Exit action
+    action = 'lnkScrn:' + next_question + ':' + question_response
+    log_user_actions(request, action, None, None, None, None, None)
+
     error = json.loads(error)
     metadata = json.loads(metadata)
 
@@ -240,6 +247,16 @@ def link_account_result(request):
     
 	recent_action = User_Actions.objects.filter(user_id = request.user, action__in=["link_item", "link_exit", "relink_item"]).order_by('-date_created').first()
 
+	# Fetching the linking event (link_checking, link_savings etc) that the user exited from by hitting the X in Plaid Link
+	last_link_exit_event = User_Actions.objects.filter(user_id = request.user, action__startswith="lnkScrn", action__endswith="Exit").order_by('-date_created')[:1]
+	if last_link_exit_event:
+		last_action = last_link_exit_event[0].action
+		# Splitting the string in the format lnkScrn:link_checking:Exit
+		q = last_action.split(':')
+		next_question = q[1]
+	else:
+		next_question = None
+
 	first_timer = 1
 	if Users_With_Linked_Institutions.objects.filter(user_id = request.user).count():
 		first_timer = 0
@@ -268,6 +285,7 @@ def link_account_result(request):
 		'accounts': accounts,
 		'treatment': treatment,
 		'first_timer': first_timer,
+		'next_question': next_question,
 	}
 	return render(request, 'fin/link_2_result.html', context)
     
@@ -349,6 +367,7 @@ def plaid_link_onSuccess(request):
 	public_token = request.POST.get('public_token', '')
 	metadata = request.POST.get('metadata', '')
 	next_question = request.POST.get('next_question', '')
+	question_response = 'Success'
 	
 	# TODO: This will fail if metadata is blank
 	metadata = json.loads(metadata)
@@ -417,7 +436,7 @@ def plaid_link_onSuccess(request):
 		log_user_actions(request, "link_item", item_response.get('item').get('institution_id'), institution_response.get('institution').get('name'), 
 			None, None, metadata.get('link_session_id'))
 		if next_question:
-			action = 'lnkScrn:' + next_question + ':' + next_question + ':Continue'
+			action = 'lnkScrn:' + next_question + ':' + question_response
 			log_user_actions(request, action, None, None, None, None, None)
 		
 		# Get item_accounts and insert into database.
@@ -718,6 +737,10 @@ def add_account(request):
 
 		# Fetch next question
 		plaid_linkbox_title, linkbox_text, next_question = next_account_linking_question(request.user.id)
+		print(f'Plaid LB title: {plaid_linkbox_title}')
+		print(f'Plaid LB text: {linkbox_text}')
+		print(f'Next Q: {next_question}')
+
 		item_ids = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).prefetch_related('fin_accounts_set').all()
 		context = {
 			'title': "Link Institution",
@@ -744,11 +767,10 @@ def add_account(request):
 	elif request.method == 'POST':
 		
 		question = request.POST.get("question", "")
-		question_desc = request.POST.get("question_desc", "")
 		question_response = request.POST.get("question_response", "")
 		
 		# Save user response
-		action = 'lnkScrn:' + question + ':' + question_desc + ':' + question_response
+		action = 'lnkScrn:' + question + ':' + question_response
 		log_user_actions(request, action, None, None, None, None, None)
 		
 		context = {
@@ -767,22 +789,21 @@ def add_account_plus(request):
 	if request.method == 'POST':
 		
 		question = request.POST.get("question", "")
-		question_desc = request.POST.get("question_desc", "")
 		question_response = request.POST.get("question_response", "")
 		
-		# Making an entry in the users_with_linked_institutions table 
-		updated_item, new_item = Users_With_Linked_Institutions.objects.update_or_create(user_id = request.user, defaults={'user_id': request.user})
-
 		# Save user response
-		action = 'lnkScrn:' + question + ':' + question_desc + ':' + question_response
+		action = 'lnkScrn:' + question + ':' + question_response
 		log_user_actions(request, action, None, None, None, None, None)
 		
-		if question_response == 'Continue': # this is from the last page
+		if question_response == 'Finish': # this is from the last page
+			# Making an entry in the users_with_linked_institutions table
+			updated_item, new_item = Users_With_Linked_Institutions.objects.update_or_create(user_id = request.user, defaults={'user_id': request.user})
 			return redirect('home')
 		else: # This is from the summary page
 			return redirect('add_account')
 	else:
-		pass
+		# GET request redirects to home
+		return redirect('home')
 
 
 # ------------------------------------------------------------------

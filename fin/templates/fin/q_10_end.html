@@ -13,13 +13,9 @@
 	</p>
 
 	<form action="/add_plus/" method="post">{% csrf_token %}
-		<button class="link_button btn btn-primary mr-2" type="submit" name="question_response" value="Continue">My Dashboard</button>
+		<button class="link_button btn btn-primary mr-2" type="submit" name="question_response" value="Finish">My Dashboard</button>
 		<input type="hidden" id="question" name="question" value="q_10_end">
 		<input type="hidden" id="question_desc" name="question_desc" value="end">
 	</form>
-</div>
-
-	  </div>
-	</div>
 </div>
 {% endblock content %}
