@@ -737,9 +737,6 @@ def add_account(request):
 
 		# Fetch next question
 		plaid_linkbox_title, linkbox_text, next_question = next_account_linking_question(request.user.id)
-		print(f'Plaid LB title: {plaid_linkbox_title}')
-		print(f'Plaid LB text: {linkbox_text}')
-		print(f'Next Q: {next_question}')
 
 		item_ids = Fin_Items.objects.filter(user_id = request.user).exclude(deleted = 1).prefetch_related('fin_accounts_set').all()
 		context = {
