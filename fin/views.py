@@ -826,7 +826,6 @@ def reset_account(request):
 		try:
 			response = client.Item.remove(item.p_access_token)
 		except plaid.errors.PlaidError as e:
-			print("ARGH!!")
 			return JsonResponse(format_error(e))
 
 		if response['removed'] == True:
