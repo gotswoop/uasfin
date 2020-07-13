@@ -65,7 +65,6 @@ class Fin_Accounts_History(models.Model):
 
 class Fin_Accounts_Balances(models.Model):
 	item_id = models.ForeignKey(Fin_Items, db_column='item_id', on_delete=models.PROTECT)
-	p_item_id = models.CharField(max_length=250)
 	# TODO: account_id = models.ForeignKey(Fin_Accounts, db_column='account_id', on_delete=models.PROTECT)
 	p_account_id = models.CharField(max_length=250)
 	p_balance = models.DecimalField(max_digits=19, decimal_places=4, null=True)
