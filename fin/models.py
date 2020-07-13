@@ -8,6 +8,7 @@ class Fin_Items(models.Model):
 	p_item_name = models.CharField(max_length=250)
 	p_item_id = models.CharField(max_length=250)
 	p_access_token = models.CharField(max_length=250, null=True)
+	p_assets_token = models.CharField(max_length=250, null=True)
 	date_created = models.DateTimeField(auto_now_add=True)
 	date_updated = models.DateTimeField(auto_now=True)
 	item_refresh_date = models.DateTimeField(null=True)
@@ -61,6 +62,21 @@ class Fin_Accounts_History(models.Model):
 
 	class Meta:
 		db_table = "fin_accounts_history"
+
+class Fin_Accounts_Balances(models.Model):
+	item_id = models.ForeignKey(Fin_Items, db_column='item_id', on_delete=models.PROTECT)
+	p_item_id = models.CharField(max_length=250)
+	# TODO: account_id = models.ForeignKey(Fin_Accounts, db_column='account_id', on_delete=models.PROTECT)
+	p_account_id = models.CharField(max_length=250)
+	p_balance = models.DecimalField(max_digits=19, decimal_places=4, null=True)
+	p_balance_date = models.DateTimeField(null=True)
+	date_created = models.DateTimeField(auto_now_add=True)
+	date_updated = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		unique_together = ("item_id", "p_account_id", "p_balance_date")
+		# TODO: unique_together = ("item_id", "account_id", "p_balance_date")
+		db_table = "fin_accounts_balances"
 
 class Fin_Transactions(models.Model):
 	account_id = models.ForeignKey(Fin_Accounts, db_column='account_id', on_delete=models.PROTECT)
