@@ -4,7 +4,7 @@ import sys
 import os
 from django.conf import settings
 from django.contrib.auth.models import User
-from fin.models import Fin_Transactions, Fin_Accounts, Fin_Accounts_History
+from fin.models import Fin_Transactions, Fin_Accounts, Fin_Accounts_History, Fin_Accounts_Balances
 from django.db import IntegrityError
 from datetime import date
 
@@ -99,6 +99,29 @@ with open(csv_file, 'w') as csvFile:
 		])
 
 csvFile.close()
+
+csv_file = 'uasfin_identified_accounts_balances.csv'
+account_objs = Fin_Accounts_Balances.objects.filter(item_id__user_id__pk__gt=1005)
+
+with open(csv_file, 'w') as csvFile:
+	writer = csv.writer(csvFile)
+	writer.writerow(["panel_id", "fin_institution_id_internal", "account_id_plaid", "account_balances_date", "account_balances"])
+	for t in account_objs:
+		user = t.item_id.user_id.username
+		item_id = t.item_id.pk
+		account_id = t.p_account_id
+		balance_date = t.p_balance_date
+		balance = t.p_balance
+
+		writer.writerow([
+			user,
+			item_id,
+			account_id,
+			balance_date, balance
+		])
+
+csvFile.close()
+
 
 csv_file = 'uasfin_identified_accounts_history.csv'
 account_objs = Fin_Accounts_History.objects.filter(item_id__user_id__pk__gt=1005)

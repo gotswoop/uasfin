@@ -4,7 +4,7 @@ import sys
 import os
 from django.conf import settings
 from django.contrib.auth.models import User
-from fin.models import Fin_Items, Fin_Accounts, Fin_Accounts_History, Fin_Transactions, User_Actions, Plaid_Webhook_Logs
+from fin.models import Fin_Items, Fin_Accounts, Fin_Accounts_History, Fin_Accounts_Balances, Fin_Transactions, User_Actions, Plaid_Webhook_Logs
 from django.db import IntegrityError
 from datetime import date
 
@@ -147,6 +147,28 @@ with open(csv_file, 'w') as csvFile:
 			user1,
 			item1, item5, item6,
 			account2, account4, account5, account6, account7, account8, account11, account12, account13
+		])
+
+csvFile.close()
+
+csv_file = 'uasfin_deidentified_accounts_balances.csv'
+account_objs = Fin_Accounts_Balances.objects.filter(item_id__user_id__pk__gt=1005)
+
+with open(csv_file, 'w') as csvFile:
+	writer = csv.writer(csvFile)
+	writer.writerow(["user_id_internal", "fin_institution_id_internal", "account_id_plaid", "account_balances_date", "account_balances"])
+	for t in account_objs:
+		user = t.item_id.user_id.pk
+		item_id = t.item_id.pk
+		account_id = t.p_account_id
+		balance_date = t.p_balance_date
+		balance = t.p_balance
+
+		writer.writerow([
+			user,
+			item_id,
+			account_id,
+			balance_date, balance
 		])
 
 csvFile.close()
