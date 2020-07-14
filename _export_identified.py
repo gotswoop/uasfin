@@ -105,7 +105,7 @@ account_objs = Fin_Accounts_Balances.objects.filter(item_id__user_id__pk__gt=100
 
 with open(csv_file, 'w') as csvFile:
 	writer = csv.writer(csvFile)
-	writer.writerow(["panel_id", "fin_institution_id_internal", "account_id_plaid", "account_balances_date", "account_balances"])
+	writer.writerow(["panel_id", "fin_institution_id_internal", "account_id_plaid", "account_balance_date", "account_balance"])
 	for t in account_objs:
 		user = t.item_id.user_id.username
 		item_id = t.item_id.pk
